@@ -173,15 +173,76 @@
     '<circle cx="80" cy="112" r="5" fill="#ffc0b0"/><circle cx="120" cy="112" r="5" fill="#ffc0b0"/>' +
     '<path d="M92 116 q 8 8 16 0" stroke="#c97a6a" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
 
-  function statueSVG(characterSvg) {
-    return '<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">' +
-      PEDESTAL + characterSvg + BOOK + '</svg>';
+  function svgWrap(inner) {
+    return '<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">' + inner + '</svg>';
+  }
+  // A scalable open book centered at (cx, cy-top), scale s.
+  function bookGroup(cx, cy, s) {
+    return '<g transform="translate(' + cx + ' ' + cy + ') scale(' + s + ')">' +
+      '<path d="M0 0 C -20 -9, -44 -7, -55 0 L -55 44 C -44 37, -20 35, 0 44 Z" fill="#ffffff" stroke="#d9c08a" stroke-width="2"/>' +
+      '<path d="M0 0 C 20 -9, 44 -7, 55 0 L 55 44 C 44 37, 20 35, 0 44 Z" fill="#fbf4e2" stroke="#d9c08a" stroke-width="2"/>' +
+      '<line x1="0" y1="0" x2="0" y2="44" stroke="#d9c08a" stroke-width="2"/>' +
+      '<g stroke="#cdd8f2" stroke-width="3" stroke-linecap="round">' +
+      '<line x1="-42" y1="10" x2="-10" y2="8"/><line x1="-42" y1="20" x2="-10" y2="18"/><line x1="-40" y1="30" x2="-14" y2="29"/>' +
+      '<line x1="10" y1="8" x2="42" y2="10"/><line x1="10" y1="18" x2="42" y2="20"/><line x1="14" y1="29" x2="40" y2="30"/></g></g>';
+  }
+  function spark(x, y, s) {
+    return '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')">' +
+      '<path d="M0 -6 L1.6 -1.6 L6 0 L1.6 1.6 L0 6 L-1.6 1.6 L-6 0 L-1.6 -1.6 Z" fill="#ffd76a"/></g>';
   }
 
+  // ---- CAT: cozy bookworm cat (full body + tail + glasses) on a wood step ----
+  const CAT_SVG = svgWrap(
+    '<ellipse cx="100" cy="232" rx="66" ry="7" fill="#00000015"/>' +
+    '<rect x="48" y="214" width="104" height="20" rx="6" fill="#caa46a"/>' +
+    '<rect x="48" y="214" width="104" height="6" rx="3" fill="#e0c188"/>' +
+    '<ellipse cx="100" cy="180" rx="50" ry="40" fill="#f3a85a"/>' +
+    '<ellipse cx="100" cy="190" rx="30" ry="28" fill="#ffe9c9"/>' +
+    '<path d="M150 192 q 28 0 28 -24 q 0 -16 -16 -18 q 9 10 7 20 q -3 14 -26 12 Z" fill="#e8923f"/>' +
+    '<path d="M70 160 q 6 8 2 16" stroke="#e08b3a" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+    '<path d="M130 160 q -6 8 -2 16" stroke="#e08b3a" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+    CAT_CHAR +
+    '<g fill="none" stroke="#5a4636" stroke-width="3"><circle cx="86" cy="95" r="12"/><circle cx="114" cy="95" r="12"/><line x1="98" y1="95" x2="102" y2="95"/></g>' +
+    bookGroup(100, 150, 0.8) +
+    '<ellipse cx="58" cy="182" rx="11" ry="8" fill="#f3a85a"/>' +
+    '<ellipse cx="142" cy="182" rx="11" ry="8" fill="#f3a85a"/>'
+  );
+
+  // ---- UNICORN: floating on a cloud with a magic book + sparkles ----
+  const UNICORN_SVG = svgWrap(
+    '<ellipse cx="100" cy="234" rx="62" ry="7" fill="#00000012"/>' +
+    '<g fill="#cdbcef">' +
+    '<circle cx="59" cy="219" r="20"/><circle cx="90" cy="209" r="25"/>' +
+    '<circle cx="123" cy="211" r="23"/><circle cx="151" cy="220" r="17"/>' +
+    '<rect x="49" y="214" width="106" height="20" rx="12"/></g>' +
+    '<g fill="#eef2fd">' +
+    '<circle cx="60" cy="217" r="17"/><circle cx="90" cy="207" r="22"/>' +
+    '<circle cx="122" cy="209" r="20"/><circle cx="150" cy="218" r="14"/>' +
+    '<rect x="51" y="213" width="100" height="17" rx="10"/></g>' +
+    UNICORN_CHAR +
+    bookGroup(100, 152, 0.58) +
+    spark(56, 120, 1.5) + spark(150, 106, 1.7) + spark(142, 162, 1.1) + spark(70, 152, 0.9)
+  );
+
+  // ---- MERMAID: on a scallop shell, teal hair + bubbles ----
+  const MERMAID_SVG = svgWrap(
+    '<ellipse cx="100" cy="233" rx="64" ry="7" fill="#00000012"/>' +
+    '<path d="M50 232 C 54 198, 146 198, 150 232 Z" fill="#ffc6d3"/>' +
+    '<path d="M50 232 C 54 198, 146 198, 150 232 Z" fill="none" stroke="#f3a9bb" stroke-width="2"/>' +
+    '<g stroke="#f3a9bb" stroke-width="2">' +
+    '<line x1="100" y1="207" x2="100" y2="230"/><line x1="100" y1="207" x2="78" y2="230"/>' +
+    '<line x1="100" y1="207" x2="122" y2="230"/><line x1="100" y1="207" x2="62" y2="231"/>' +
+    '<line x1="100" y1="207" x2="138" y2="231"/></g>' +
+    '<circle cx="100" cy="205" r="6" fill="#ffd7e0"/>' +
+    '<g fill="#bfeaf0"><circle cx="40" cy="150" r="6"/><circle cx="30" cy="128" r="4"/><circle cx="46" cy="112" r="3"/></g>' +
+    MERMAID_CHAR +
+    bookGroup(100, 150, 0.78)
+  );
+
   const STATUES = [
-    { id: "cat",     name: "Reading Cat",     stars: 3,  svg: statueSVG(CAT_CHAR) },
-    { id: "unicorn", name: "Reading Unicorn", stars: 10, svg: statueSVG(UNICORN_CHAR) },
-    { id: "mermaid", name: "Reading Mermaid", stars: 20, svg: statueSVG(MERMAID_CHAR) }
+    { id: "cat",     name: "Reading Cat",     stars: 3,  svg: CAT_SVG },
+    { id: "unicorn", name: "Reading Unicorn", stars: 10, svg: UNICORN_SVG },
+    { id: "mermaid", name: "Reading Mermaid", stars: 20, svg: MERMAID_SVG }
   ];
 
   // Big reveal overlay when a new statue is unlocked.
