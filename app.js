@@ -730,7 +730,7 @@
         const page = pages[p - 1];
         stage.appendChild(el("div", { class: "bigcard" }, [
           el("div", { class: "story-pic" }, [page.pic]),
-          el("div", { class: "sentence" }, [page.text])
+          el("div", { class: "sentence story-text" }, [page.text])
         ]));
         stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(page.text) }, ["👂 Hear it"]));
         stage.appendChild(el("div", { class: "btn-row" }, [

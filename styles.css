@@ -309,6 +309,7 @@ html, body {
 .story-cover { padding: 32px 40px; }
 .story-cover-pic { font-size: 5.5rem; }
 .story-title { font-size: 2rem; margin-top: 8px; }
+.story-text { font-size: 2rem; max-width: 13em; line-height: 1.35; }
 
 /* Decodable sentence (smaller than a single big word) */
 .sentence {

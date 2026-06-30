@@ -146,52 +146,63 @@ window.READING_DATA = {
     "what", "want", "come", "some", "from", "were", "there", "where"
   ],
 
-  // ---- Decodable stories (little picture books, one sentence per page) ----
-  // Kept decodable: short-vowel words + a few taught heart words (the, a, is…).
+  // ---- Decodable stories (little picture books, a sentence or two per page) ----
+  // Kept decodable: short-vowel + blends/digraphs words, plus taught heart words.
   stories: [
     {
       id: "sam-cat", title: "Sam the Cat", cover: "🐱",
       pages: [
-        { text: "Sam is a cat.",      pic: "🐱" },
-        { text: "Sam has a hat.",     pic: "🎩" },
-        { text: "Sam sat on a mat.",  pic: "🐈" },
-        { text: "Sam had a nap.",     pic: "😴" }
+        { text: "Sam is a big cat. He has a red hat.",            pic: "🐱" },
+        { text: "Sam runs fast. He runs to the fish shop.",        pic: "🏃" },
+        { text: "A fish is in a dish. Sam wants it!",              pic: "🐟" },
+        { text: "But a big dog runs up. The dog wants the fish.",  pic: "🐶" },
+        { text: "Sam hisses at the dog. The dog runs off!",        pic: "😼" },
+        { text: "Sam munches the fish. Yum, yum!",                 pic: "😋" }
       ]
     },
     {
       id: "big-pig", title: "The Big Pig", cover: "🐷",
       pages: [
-        { text: "A pig is big.",       pic: "🐷" },
-        { text: "The pig can dig.",    pic: "🕳️" },
-        { text: "The pig digs a pit.", pic: "⛏️" },
-        { text: "Hop in, pig!",        pic: "💦" }
+        { text: "Pip is a pig. Pip is pink and big.",            pic: "🐷" },
+        { text: "Pip can dig in the mud. Pip digs a big pit.",   pic: "🕳️" },
+        { text: "Pip jumps in the pit. It is fun!",              pic: "💦" },
+        { text: "But Pip is stuck. Pip can not get up!",         pic: "😟" },
+        { text: "A duck runs up. \"I can help!\" said the duck.", pic: "🦆" },
+        { text: "The duck and Pip tug. Pip is up at last!",      pic: "🎉" }
       ]
     },
     {
       id: "dog-frog", title: "The Dog and the Frog", cover: "🐸",
       pages: [
-        { text: "A dog sat on a log.",     pic: "🪵" },
-        { text: "A frog hops on the log.", pic: "🐸" },
-        { text: "The dog and frog jog.",   pic: "🏃" },
-        { text: "Hop, dog! Hop, frog!",    pic: "🐾" }
+        { text: "A dog sat on a log. The log was wet.",              pic: "🪵" },
+        { text: "A frog hops up. \"Hop on!\" said the frog.",        pic: "🐸" },
+        { text: "The dog and frog jog to the pond.",                 pic: "🏃" },
+        { text: "Splash! They jump in. It is a lot of fun!",         pic: "💦" },
+        { text: "A fish pops up. \"Can I jump in?\" said the fish.", pic: "🐟" },
+        { text: "The dog, frog, and fish swim. Splash, splash!",     pic: "🌊" }
       ]
     },
     {
       id: "fun-sun", title: "Fun in the Sun", cover: "☀️",
       pages: [
-        { text: "The sun is up.",          pic: "☀️" },
-        { text: "A pup runs in the sun.",  pic: "🐶" },
-        { text: "The pup digs in mud.",    pic: "🐾" },
-        { text: "Fun, fun, fun!",          pic: "🎉" }
+        { text: "The sun is up. It is hot, hot, hot!",          pic: "☀️" },
+        { text: "Gus the pup runs in the sun. He has fun.",     pic: "🐶" },
+        { text: "Gus digs in the sand. He digs and digs.",      pic: "🏖️" },
+        { text: "Gus finds a shell. It is pink and red.",       pic: "🐚" },
+        { text: "Gus runs to get a drink. He is hot!",          pic: "🥤" },
+        { text: "Then Gus naps in his den. What fun!",          pic: "😴" }
       ]
     },
     {
       id: "red-hen", title: "The Red Hen", cover: "🐔",
       pages: [
-        { text: "The hen is red.",          pic: "🐔" },
-        { text: "The hen has ten eggs.",    pic: "🥚" },
-        { text: "The hen sits on the eggs.", pic: "🪺" },
-        { text: "Peck, peck, hen!",         pic: "🐥" }
+        { text: "The red hen has ten eggs. She sits on them.",  pic: "🥚" },
+        { text: "The eggs crack. Ten chicks hatch!",            pic: "🐣" },
+        { text: "The chicks are wet. The hen helps them.",      pic: "🐥" },
+        { text: "The chicks get big. They run and jump.",       pic: "🐤" },
+        { text: "A fox is at the den! The hen is mad.",         pic: "🦊" },
+        { text: "The hen pecks the fox. The fox runs off!",     pic: "💨" },
+        { text: "The chicks nap. The hen is glad.",             pic: "😴" }
       ]
     }
   ]
