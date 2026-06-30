@@ -59,6 +59,18 @@
   }
   function getStarCount() { return loadProgress().starCount || 0; }
   function getLevelsMastered() { return Object.keys(loadProgress().stars || {}).length; }
+
+  // One-time cleanup: the old version awarded a star per item read, which
+  // inflated starCount (e.g. 74). The new rule is 1 star per finished lesson,
+  // so recompute the count from lessons actually completed. Runs once.
+  function migrateProgress() {
+    const p = loadProgress();
+    if (p._v >= 2) return;                 // already cleaned up
+    p.lessonsDone = p.lessonsDone || {};
+    p.starCount = Object.keys(p.lessonsDone).length;  // accurate under new rules
+    p._v = 2;
+    saveProgress(p);
+  }
   function unlockedStatueCount() { const n = getStarCount(); return STATUES.filter(s => n >= s.stars).length; }
 
   /* ---------------- Small helpers ---------------- */
@@ -559,5 +571,6 @@
   }
 
   /* ---------------- start ---------------- */
+  migrateProgress();
   renderHome();
 })();
