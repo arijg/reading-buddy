@@ -33,6 +33,7 @@ is organized into levels that build on each other.
 | **🧩 Blend Words** | See a CVC word, tap each letter and say its sound, then blend it; tap to hear the whole word and self-check. | Decoding / blending |
 | **📕 Read Words** | A word appears; she reads it aloud and marks "Got it!" or "Tricky." | Word reading + fluency |
 | **❤️ Heart Words** | Practice irregular high-frequency words (`the`, `said`) separately. | Sight / "red" words |
+| **📚 Stories** | Read short **decodable** picture-book stories, one sentence + picture per page. | Connected-text reading |
 
 Planned later: real-vs-nonsense word check, decodable sentences, parent progress view.
 
@@ -98,13 +99,24 @@ Levels follow a standard OG short-vowel order (tunable in `data.js`):
 Each level only uses sounds introduced at or before it. To match her actual
 classroom sequence, edit the levels in `data.js`.
 
-Word lists are authored here (plain word lists aren't copyrightable), using these
-openly-licensed / free references for ordering and coverage:
+Word lists and the in-app stories are authored here (plain word lists and short
+original decodable sentences aren't copyrightable), using these openly-licensed /
+free references for ordering and coverage:
 
 - [OER Commons – Word Lists by Syllable Type (OG)](https://oercommons.org/authoring/27442-word-lists-by-syllable-type-orton-gillingham/view) (openly licensed)
 - [Reading Universe – decodable texts by skill](https://readinguniverse.org/article/explore-teaching-topics/word-recognition/phonics/decodable-texts-for-each-phonics-skill)
 - [Spencer Learning – free phonics word lists](https://spencerlearning.com/ultimate-phonics/resources/free-phonics-word-lists.html)
 - [Literacy Learn – free OG scope & sequence](https://literacylearn.com/free-phonics-scope-sequence/)
+
+### Free illustrated story libraries (for reading *together*)
+
+The in-app stories are decodable (she sounds them out solo). For richer
+picture-book reading with a grown-up helping, these are free and openly licensed
+(CC) — great to read together, not strictly decodable:
+
+- [StoryWeaver (Pratham Books)](https://storyweaver.org.in/) — thousands of CC-BY illustrated books at graded reading levels
+- [Free Kids Books](https://freekidsbooks.org/early-reader/) — Creative Commons early readers
+- [Global Digital Library](https://digitallibrary.io/) — openly-licensed leveled, illustrated books
 
 ---
 

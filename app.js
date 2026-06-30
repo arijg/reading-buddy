@@ -348,6 +348,7 @@
     }
 
     const items = [
+      { emoji: "📚", label: "Stories",     go: renderStories },
       { emoji: "🔤", label: "Sounds",      go: renderSounds },
       { emoji: "🧩", label: "Blend Words", go: () => renderLevelPicker("blend") },
       { emoji: "📕", label: "Read Words",  go: () => renderLevelPicker("read") },
@@ -689,6 +690,63 @@
       i++;
       if (i >= words.length) { completeLesson("heart"); cheer("💖"); renderDone("Heart Words", "❤️", renderHeartWords); }
       else show();
+    }
+    show();
+  }
+
+  /* ---------------- ACTIVITY: STORIES ---------------- */
+  function renderStories() {
+    clear();
+    app.appendChild(topbar("Stories 📚", renderHome));
+    app.appendChild(el("div", { class: "prompt", style: "margin-bottom:10px" }, ["Pick a story to read!"]));
+    const list = el("div", { class: "story-list" });
+    DATA.stories.forEach(s => {
+      list.appendChild(el("button", { class: "story-card", onclick: () => renderStory(s) }, [
+        el("span", { class: "story-card-pic" }, [s.cover]),
+        el("span", { class: "story-card-title" }, [s.title])
+      ]));
+    });
+    app.appendChild(list);
+  }
+
+  function renderStory(story) {
+    const pages = story.pages;
+    let p = 0; // 0 = cover, 1..N = pages
+
+    function show() {
+      clear();
+      app.appendChild(topbar(story.title + " 📖", renderStories));
+      const stage = el("div", { class: "stage" });
+
+      if (p === 0) {
+        stage.appendChild(el("div", { class: "bigcard story-cover" }, [
+          el("div", { class: "story-cover-pic" }, [story.cover]),
+          el("div", { class: "story-title" }, [story.title])
+        ]));
+        stage.appendChild(el("div", { class: "btn-row" }, [
+          el("button", { class: "btn green", onclick: () => { p = 1; show(); } }, ["Start Reading ▶️"])
+        ]));
+      } else {
+        const page = pages[p - 1];
+        stage.appendChild(el("div", { class: "bigcard" }, [
+          el("div", { class: "story-pic" }, [page.pic]),
+          el("div", { class: "sentence" }, [page.text])
+        ]));
+        stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(page.text) }, ["👂 Hear it"]));
+        stage.appendChild(el("div", { class: "btn-row" }, [
+          el("button", { class: "btn ghost", onclick: () => { p--; show(); } }, ["← Back"]),
+          (p < pages.length)
+            ? el("button", { class: "btn green", onclick: () => { p++; show(); } }, ["Next →"])
+            : el("button", { class: "btn green", onclick: finish }, ["The End! 🎉"])
+        ]));
+        stage.appendChild(el("div", { class: "progress" }, [p + " / " + pages.length]));
+      }
+      app.appendChild(stage);
+    }
+    function finish() {
+      completeLesson("story-" + story.id);
+      cheer("📚");
+      renderDone("Story", "📚", () => renderStory(story), "You read the whole story! 🌟");
     }
     show();
   }

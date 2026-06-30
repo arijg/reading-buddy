@@ -144,5 +144,55 @@ window.READING_DATA = {
     "are", "he", "she", "we", "me", "be", "my", "I",
     "they", "have", "do", "go", "no", "so", "for", "here",
     "what", "want", "come", "some", "from", "were", "there", "where"
+  ],
+
+  // ---- Decodable stories (little picture books, one sentence per page) ----
+  // Kept decodable: short-vowel words + a few taught heart words (the, a, is…).
+  stories: [
+    {
+      id: "sam-cat", title: "Sam the Cat", cover: "🐱",
+      pages: [
+        { text: "Sam is a cat.",      pic: "🐱" },
+        { text: "Sam has a hat.",     pic: "🎩" },
+        { text: "Sam sat on a mat.",  pic: "🐈" },
+        { text: "Sam had a nap.",     pic: "😴" }
+      ]
+    },
+    {
+      id: "big-pig", title: "The Big Pig", cover: "🐷",
+      pages: [
+        { text: "A pig is big.",       pic: "🐷" },
+        { text: "The pig can dig.",    pic: "🕳️" },
+        { text: "The pig digs a pit.", pic: "⛏️" },
+        { text: "Hop in, pig!",        pic: "💦" }
+      ]
+    },
+    {
+      id: "dog-frog", title: "The Dog and the Frog", cover: "🐸",
+      pages: [
+        { text: "A dog sat on a log.",     pic: "🪵" },
+        { text: "A frog hops on the log.", pic: "🐸" },
+        { text: "The dog and frog jog.",   pic: "🏃" },
+        { text: "Hop, dog! Hop, frog!",    pic: "🐾" }
+      ]
+    },
+    {
+      id: "fun-sun", title: "Fun in the Sun", cover: "☀️",
+      pages: [
+        { text: "The sun is up.",          pic: "☀️" },
+        { text: "A pup runs in the sun.",  pic: "🐶" },
+        { text: "The pup digs in mud.",    pic: "🐾" },
+        { text: "Fun, fun, fun!",          pic: "🎉" }
+      ]
+    },
+    {
+      id: "red-hen", title: "The Red Hen", cover: "🐔",
+      pages: [
+        { text: "The hen is red.",          pic: "🐔" },
+        { text: "The hen has ten eggs.",    pic: "🥚" },
+        { text: "The hen sits on the eggs.", pic: "🪺" },
+        { text: "Peck, peck, hen!",         pic: "🐥" }
+      ]
+    }
   ]
 };

@@ -284,6 +284,32 @@ html, body {
 .keyword-line { font-size: 1.8rem; }
 .keyword-line .emoji { font-size: 2.4rem; vertical-align: middle; }
 
+/* Stories: picker list */
+.story-list { display: grid; gap: 14px; }
+.story-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--card);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 22px;
+  font: inherit;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.story-card:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.story-card-pic { font-size: 2.8rem; }
+.story-card-title { font-size: 1.4rem; }
+
+/* Stories: page reader */
+.story-pic { font-size: 4.5rem; line-height: 1.1; margin-bottom: 8px; }
+.story-cover { padding: 32px 40px; }
+.story-cover-pic { font-size: 5.5rem; }
+.story-title { font-size: 2rem; margin-top: 8px; }
+
 /* Decodable sentence (smaller than a single big word) */
 .sentence {
   font-size: 2.4rem;
