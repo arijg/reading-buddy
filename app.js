@@ -10,6 +10,7 @@
   "use strict";
 
   const DATA = window.READING_DATA;
+  const MATH = window.MATH_DATA;
   const app = document.getElementById("app");
   const VOWELS = new Set(["a", "e", "i", "o", "u"]);
 
@@ -60,6 +61,19 @@
   function getStarCount() { return loadProgress().starCount || 0; }
   function getLevelsMastered() { return Object.keys(loadProgress().stars || {}).length; }
 
+  // Math difficulty — the "make it harder" setting. Stored on-device so it
+  // sticks between visits. Defaults to "easy". (Keys come from MATH.levels.)
+  function getMathLevel() {
+    const l = loadProgress().mathLevel;
+    return (l && MATH.levels[l]) ? l : "1";   // unknown/old values fall back to level 1
+  }
+  function setMathLevel(l) {
+    if (!MATH.levels[l]) return;
+    const p = loadProgress();
+    p.mathLevel = l;
+    saveProgress(p);
+  }
+
   // One-time cleanup: the old version awarded a star per item read, which
   // inflated starCount (e.g. 74). The new rule is 1 star per finished lesson,
   // so recompute the count from lessons actually completed. Runs once.
@@ -107,6 +121,58 @@
     }
     return a;
   }
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // Build N answer buttons for a number question: the correct value plus
+  // distinct, nearby distractors, all kept inside [lo, hi], then shuffled.
+  function numberChoices(correct, n, lo, hi) {
+    const opts = new Set([correct]);
+    let guard = 0;
+    while (opts.size < n && guard++ < 200) {
+      const delta = randInt(1, 3) * (Math.random() < 0.5 ? -1 : 1);
+      let v = correct + delta;
+      if (v < lo) v = correct + Math.abs(delta);
+      if (v > hi) v = correct - Math.abs(delta);
+      if (v >= lo && v <= hi) opts.add(v);
+    }
+    for (let f = lo; opts.size < n && f <= hi; f++) opts.add(f);  // fallback fill
+    return shuffle([...opts]);
+  }
+
+  // A row of countable picture objects. `crossFrom` (optional) crosses out
+  // every object from that index on — used to show "take away" in subtraction.
+  function objectsRow(count, emoji, crossFrom) {
+    const box = el("div", { class: "objrow" });
+    for (let k = 0; k < count; k++) {
+      const crossed = (crossFrom != null && k >= crossFrom);
+      box.appendChild(el("span", { class: "obj" + (crossed ? " crossed" : "") }, [emoji]));
+    }
+    return box;
+  }
+
+  // A Singapore-style number bond: whole on top, two parts below, joined by
+  // lines. Pass null for the unknown — it renders as a highlighted "?".
+  function bondNode(whole, a, b) {
+    function circle(x, y, val, unknown) {
+      const fill = unknown ? "#ffe9a8" : "#eaf0ff";
+      const stroke = unknown ? "#f0b429" : "#9bb8f0";
+      return '<circle cx="' + x + '" cy="' + y + '" r="32" fill="' + fill + '" stroke="' + stroke + '" stroke-width="3"/>' +
+        '<text x="' + x + '" y="' + (y + 11) + '" text-anchor="middle" font-size="34" fill="#2d3142" font-family="inherit">' +
+        (unknown ? "?" : val) + '</text>';
+    }
+    const svg = '<svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">' +
+      '<line x1="120" y1="64" x2="60" y2="124" stroke="#9bb8f0" stroke-width="5" stroke-linecap="round"/>' +
+      '<line x1="120" y1="64" x2="180" y2="124" stroke="#9bb8f0" stroke-width="5" stroke-linecap="round"/>' +
+      circle(120, 42, whole, whole == null) +
+      circle(60, 150, a, a == null) +
+      circle(180, 150, b, b == null) +
+      '</svg>';
+    const d = el("div", { class: "bond" });
+    d.innerHTML = svg;
+    return d;
+  }
+
   function cheer(emoji) {
     const c = el("div", { class: "cheer" }, [emoji || "🎉"]);
     document.body.appendChild(c);
@@ -277,7 +343,7 @@
   /* ---------------- COLLECTION ---------------- */
   function renderCollection() {
     clear();
-    app.appendChild(topbar("My Collection 🏛️", renderHome));
+    app.appendChild(topbar("My Collection 🏛️", renderMainMenu));
     const n = getStarCount();
     const intro = el("div", { class: "prompt", style: "margin-bottom:8px" }, [
       "Collect a statue for every " + "milestone of stars!"
@@ -331,31 +397,8 @@
     return banner;
   }
 
-  /* ---------------- HOME ---------------- */
-  function renderHome() {
-    clear();
-    app.appendChild(el("h1", { class: "home-title" }, ["Reading Buddy 📖"]));
-    app.appendChild(el("p", { class: "home-sub" }, ["Pick something fun to do!"]));
-    app.appendChild(starsBanner());
-    app.appendChild(el("button", { class: "collection-btn", onclick: renderCollection }, [
-      "🏛️ My Collection  (" + unlockedStatueCount() + " / " + STATUES.length + ")"
-    ]));
-    const trickyN = getTrickyWords().length;
-    if (trickyN > 0) {
-      app.appendChild(el("button", { class: "tricky-btn", onclick: renderTricky }, [
-        "🤔 Review Tricky Words  (" + trickyN + ")"
-      ]));
-    }
-
-    const items = [
-      { emoji: "📚", label: "Stories",     go: renderStories },
-      { emoji: "🔤", label: "Sounds",      go: renderSounds },
-      { emoji: "🧩", label: "Blend Words", go: () => renderLevelPicker("blend") },
-      { emoji: "📕", label: "Read Words",  go: () => renderLevelPicker("read") },
-      { emoji: "📖", label: "Sentences",   go: () => renderLevelPicker("sentences") },
-      { emoji: "🕵️", label: "Real or Not?", go: renderRealOrNot },
-      { emoji: "❤️", label: "Heart Words", go: renderHeartWords }
-    ];
+  // Shared: turn a list of {emoji,label,go} into the 2-column card menu.
+  function menuGrid(items) {
     const menu = el("div", { class: "menu" });
     items.forEach(it => {
       menu.appendChild(el("button", { class: "menu-card", onclick: it.go }, [
@@ -363,13 +406,274 @@
         el("span", null, [it.label])
       ]));
     });
-    app.appendChild(menu);
+    return menu;
+  }
+
+  /* ---------------- MAIN MENU (pick Reading or Math) ---------------- */
+  // The top-level home. The star jar + collection live here now, so they
+  // celebrate everything she's done across BOTH reading and math.
+  function renderMainMenu() {
+    clear();
+    app.appendChild(el("h1", { class: "home-title" }, ["Learning Buddy 🌟"]));
+    app.appendChild(el("p", { class: "home-sub" }, ["What do you want to do today?"]));
+    app.appendChild(starsBanner());
+    app.appendChild(el("button", { class: "collection-btn", onclick: renderCollection }, [
+      "🏛️ My Collection  (" + unlockedStatueCount() + " / " + STATUES.length + ")"
+    ]));
+
+    const choices = el("div", { class: "choice-cards" }, [
+      el("button", { class: "big-choice reading", onclick: renderReadingHome }, [
+        el("span", { class: "bc-emoji" }, ["📖"]),
+        el("span", { class: "bc-label" }, ["Reading"])
+      ]),
+      el("button", { class: "big-choice math", onclick: renderMathHome }, [
+        el("span", { class: "bc-emoji" }, ["🔢"]),
+        el("span", { class: "bc-label" }, ["Math"])
+      ])
+    ]);
+    app.appendChild(choices);
+  }
+
+  /* ---------------- READING HOME ---------------- */
+  function renderReadingHome() {
+    clear();
+    app.appendChild(topbar("Reading 📖", renderMainMenu));
+
+    const trickyN = getTrickyWords().length;
+    if (trickyN > 0) {
+      app.appendChild(el("button", { class: "tricky-btn", onclick: renderTricky }, [
+        "🤔 Review Tricky Words  (" + trickyN + ")"
+      ]));
+    }
+
+    app.appendChild(menuGrid([
+      { emoji: "📚", label: "Stories",     go: renderStories },
+      { emoji: "🔤", label: "Sounds",      go: renderSounds },
+      { emoji: "🧩", label: "Blend Words", go: () => renderLevelPicker("blend") },
+      { emoji: "📕", label: "Read Words",  go: () => renderLevelPicker("read") },
+      { emoji: "📖", label: "Sentences",   go: () => renderLevelPicker("sentences") },
+      { emoji: "🕵️", label: "Real or Not?", go: renderRealOrNot },
+      { emoji: "❤️", label: "Heart Words", go: renderHeartWords }
+    ]));
+  }
+
+  /* ---------------- MATH HOME ---------------- */
+  function renderMathHome() {
+    clear();
+    app.appendChild(topbar("Math 🔢", renderMainMenu));
+
+    // Difficulty picker — this is the "make it harder" setting. Tapping a
+    // level just widens the number ranges used to build every problem.
+    const lvl = getMathLevel();
+    const diff = el("div", { class: "difficulty" }, [
+      el("span", { class: "diff-label" }, ["Level"])
+    ]);
+    Object.keys(MATH.levels).forEach(k => {
+      diff.appendChild(el("button", {
+        class: "diff-btn" + (lvl === k ? " on" : ""),
+        onclick: () => { setMathLevel(k); renderMathHome(); }
+      }, [MATH.levels[k].label]));
+    });
+    app.appendChild(diff);
+
+    app.appendChild(menuGrid([
+      { emoji: "🔢", label: "Counting",       go: mathCounting },
+      { emoji: "🔗", label: "Number Bonds",   go: mathBonds },
+      { emoji: "➕", label: "Adding",          go: mathAdding },
+      { emoji: "➖", label: "Subtracting",     go: mathSubtracting },
+      { emoji: "⚖️", label: "Which Is More?",  go: mathCompare },
+      { emoji: "➡️", label: "What Comes Next?", go: mathSequence }
+    ]));
+  }
+
+  /* ---------------- MATH: shared quiz runner ----------------
+     Every math activity is the same loop — show a question with a picture,
+     tap an answer, get a cheer, move on — so they share this runner. Each
+     activity just supplies makeQ(): a fresh { prompt, visual, sentence,
+     choices, correct } each round. A star is earned the first time the
+     activity is finished at a given difficulty. */
+  function runQuiz(opts) {
+    const total = opts.total || 8;
+    let i = 0, got = 0;
+
+    function show() {
+      clear();
+      app.appendChild(topbar(opts.title, renderMathHome));
+      const q = opts.makeQ();
+      const stage = el("div", { class: "stage" });
+
+      stage.appendChild(el("div", { class: "prompt" }, [q.prompt]));
+      if (q.visual) stage.appendChild(el("div", { class: "bigcard mathcard" }, [q.visual]));
+      if (q.sentence) stage.appendChild(el("div", { class: "mathsentence" }, [q.sentence]));
+
+      let answered = false, firstTry = true;
+      const row = el("div", { class: "choice-row" });
+      q.choices.forEach(c => {
+        const btn = el("button", { class: "choice-btn", onclick: function () {
+          if (answered) return;
+          if (c === q.correct) {
+            answered = true;
+            this.classList.add("right");
+            if (firstTry) got++;
+            cheer("⭐");
+            setTimeout(next, 750);
+          } else {
+            this.classList.add("wrong");
+            firstTry = false;
+          }
+        } }, [String(c)]);
+        row.appendChild(btn);
+      });
+      stage.appendChild(row);
+      stage.appendChild(el("div", { class: "progress" }, [(i + 1) + " / " + total]));
+      app.appendChild(stage);
+    }
+    function next() {
+      i++;
+      if (i >= total) {
+        completeLesson(opts.lessonKey);
+        renderDone(opts.title, opts.emoji, () => runQuiz(opts), "You got " + got + " of " + total + "!");
+      } else show();
+    }
+    show();
+  }
+
+  /* ---------------- MATH ACTIVITIES ---------------- */
+
+  // How many? — count a group of objects.
+  function mathCounting() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "Counting 🔢", emoji: "🔢", lessonKey: "math-count-" + lvl,
+      makeQ: function () {
+        const n = randInt(1, cfg.countMax);
+        return {
+          prompt: "How many?",
+          visual: objectsRow(n, pick(MATH.emojis)),
+          choices: numberChoices(n, 4, 1, cfg.countMax),
+          correct: n
+        };
+      }
+    });
+  }
+
+  // Number bonds — find the missing part (part–part–whole).
+  function mathBonds() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "Number Bonds 🔗", emoji: "🔗", lessonKey: "math-bond-" + lvl,
+      makeQ: function () {
+        const whole = randInt(3, cfg.bondMax);
+        const a = randInt(1, whole - 1), b = whole - a;
+        const hideB = Math.random() < 0.5;
+        const correct = hideB ? b : a;
+        return {
+          prompt: "What is the missing part?",
+          visual: bondNode(whole, hideB ? a : null, hideB ? null : b),
+          choices: numberChoices(correct, 4, 0, cfg.bondMax),
+          correct: correct
+        };
+      }
+    });
+  }
+
+  // Adding — two groups, how many altogether?
+  function mathAdding() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "Adding ➕", emoji: "➕", lessonKey: "math-add-" + lvl,
+      makeQ: function () {
+        const a = randInt(1, cfg.addMax - 1);
+        const b = randInt(1, cfg.addMax - a);
+        const emoji = pick(MATH.emojis);
+        const visual = el("div", { class: "addsub" }, [
+          objectsRow(a, emoji),
+          el("div", { class: "op" }, ["+"]),
+          objectsRow(b, emoji)
+        ]);
+        return {
+          prompt: "How many altogether?",
+          visual: visual,
+          sentence: a + " + " + b + " = ?",
+          choices: numberChoices(a + b, 4, 1, cfg.addMax),
+          correct: a + b
+        };
+      }
+    });
+  }
+
+  // Subtracting — take some away, how many are left?
+  function mathSubtracting() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "Subtracting ➖", emoji: "➖", lessonKey: "math-sub-" + lvl,
+      makeQ: function () {
+        const total = randInt(2, cfg.subMax);
+        const take = randInt(1, total - 1);
+        const left = total - take;
+        return {
+          prompt: "How many are left?",
+          visual: objectsRow(total, pick(MATH.emojis), left),  // cross out the last `take`
+          sentence: total + " − " + take + " = ?",
+          choices: numberChoices(left, 4, 0, cfg.subMax),
+          correct: left
+        };
+      }
+    });
+  }
+
+  // Which is more? — compare two groups.
+  function mathCompare() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "Which Is More? ⚖️", emoji: "⚖️", lessonKey: "math-compare-" + lvl,
+      makeQ: function () {
+        const a = randInt(1, cfg.compareMax);
+        let b = randInt(1, cfg.compareMax);
+        while (b === a) b = randInt(1, cfg.compareMax);
+        const e1 = pick(MATH.emojis), e2 = pick(MATH.emojis);
+        const visual = el("div", { class: "compare" }, [
+          el("div", { class: "compare-side" }, [objectsRow(a, e1), el("div", { class: "compare-num" }, [String(a)])]),
+          el("div", { class: "compare-vs" }, ["vs"]),
+          el("div", { class: "compare-side" }, [objectsRow(b, e2), el("div", { class: "compare-num" }, [String(b)])])
+        ]);
+        return {
+          prompt: "Which group has MORE? Tap the bigger number.",
+          visual: visual,
+          choices: shuffle([a, b]),
+          correct: Math.max(a, b)
+        };
+      }
+    });
+  }
+
+  // What comes next? — number sequences (and skip-counting when harder).
+  function mathSequence() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "What Comes Next? ➡️", emoji: "➡️", lessonKey: "math-seq-" + lvl,
+      makeQ: function () {
+        const step = pick(cfg.seqSteps);
+        const start = randInt(0, Math.max(0, cfg.seqMax - step * 3));
+        const seq = [start, start + step, start + 2 * step];
+        const answer = start + 3 * step;
+        const visual = el("div", { class: "seqrow" });
+        seq.forEach(v => visual.appendChild(el("div", { class: "seq-card" }, [String(v)])));
+        visual.appendChild(el("div", { class: "seq-card seq-q" }, ["?"]));
+        return {
+          prompt: step === 1 ? "What number comes next?" : "Count by " + step + "s. What comes next?",
+          visual: visual,
+          choices: numberChoices(answer, 4, 0, cfg.seqMax + step * 3),
+          correct: answer
+        };
+      }
+    });
   }
 
   /* ---------------- LEVEL PICKER ---------------- */
   function renderLevelPicker(mode) {
     clear();
-    app.appendChild(topbar("Pick a Level", renderHome));
+    app.appendChild(topbar("Pick a Level", renderReadingHome));
     const stars = (loadProgress().stars) || {};
     const list = el("div", { class: "level-list" });
     DATA.levels.forEach(lvl => {
@@ -424,7 +728,7 @@
 
     function show() {
       clear();
-      app.appendChild(topbar("Sounds 🔤", renderHome));
+      app.appendChild(topbar("Sounds 🔤", renderReadingHome));
       const card = deck[i];
       const stage = el("div", { class: "stage" });
 
@@ -584,7 +888,7 @@
 
     function show() {
       clear();
-      app.appendChild(topbar("Real or Not? 🕵️", renderHome));
+      app.appendChild(topbar("Real or Not? 🕵️", renderReadingHome));
       const card = deck[i];
       const stage = el("div", { class: "stage" });
 
@@ -616,14 +920,14 @@
     const words = getTrickyWords();   // snapshot of the current review list
     if (words.length === 0) {
       clear();
-      app.appendChild(topbar("Tricky Words 🤔", renderHome));
+      app.appendChild(topbar("Tricky Words 🤔", renderReadingHome));
       const stage = el("div", { class: "stage" });
       stage.appendChild(el("div", { class: "done" }, [
         el("div", { class: "big" }, ["🎉"]),
         el("h2", null, ["No tricky words!"]),
         el("p", { class: "prompt" }, ["When something is hard, tap \"Tricky\" in any activity and it will show up here to practice."])
       ]));
-      stage.appendChild(el("button", { class: "btn ghost", onclick: renderHome }, ["🏠 Home"]));
+      stage.appendChild(el("button", { class: "btn ghost", onclick: renderReadingHome }, ["🏠 Home"]));
       app.appendChild(stage);
       return;
     }
@@ -633,7 +937,7 @@
 
     function show() {
       clear();
-      app.appendChild(topbar("Tricky Words 🤔", renderHome));
+      app.appendChild(topbar("Tricky Words 🤔", renderReadingHome));
       const word = deck[i];
       const stage = el("div", { class: "stage" });
 
@@ -666,7 +970,7 @@
 
     function show() {
       clear();
-      app.appendChild(topbar("Heart Words ❤️", renderHome));
+      app.appendChild(topbar("Heart Words ❤️", renderReadingHome));
       const word = words[i];
       const stage = el("div", { class: "stage" });
 
@@ -697,7 +1001,7 @@
   /* ---------------- ACTIVITY: STORIES ---------------- */
   function renderStories() {
     clear();
-    app.appendChild(topbar("Stories 📚", renderHome));
+    app.appendChild(topbar("Stories 📚", renderReadingHome));
     app.appendChild(el("div", { class: "prompt", style: "margin-bottom:10px" }, ["Pick a story to read!"]));
     const list = el("div", { class: "story-list" });
     DATA.stories.forEach(s => {
@@ -754,7 +1058,7 @@
   /* ---------------- DONE SCREEN ---------------- */
   function renderDone(title, emoji, again, subtitle) {
     clear();
-    app.appendChild(topbar(title, renderHome));
+    app.appendChild(topbar(title, renderMainMenu));
     const stage = el("div", { class: "stage" });
     stage.appendChild(el("div", { class: "done" }, [
       el("div", { class: "big" }, [emoji + " 🌟"]),
@@ -763,12 +1067,12 @@
     ]));
     stage.appendChild(el("div", { class: "btn-row" }, [
       el("button", { class: "btn blue", onclick: again }, ["Again 🔁"]),
-      el("button", { class: "btn ghost", onclick: renderHome }, ["🏠 Home"])
+      el("button", { class: "btn ghost", onclick: renderMainMenu }, ["🏠 Home"])
     ]));
     app.appendChild(stage);
   }
 
   /* ---------------- start ---------------- */
   migrateProgress();
-  renderHome();
+  renderMainMenu();
 })();

@@ -15,6 +15,7 @@ from pathlib import Path
 here = Path(__file__).parent
 css = (here / "styles.css").read_text()
 data_js = (here / "data.js").read_text()
+math_js = (here / "math-data.js").read_text()
 app_js = (here / "app.js").read_text()
 
 html = f"""<!DOCTYPE html>
@@ -31,6 +32,9 @@ html = f"""<!DOCTYPE html>
   <div id="app"></div>
   <script>
 {data_js}
+  </script>
+  <script>
+{math_js}
   </script>
   <script>
 {app_js}

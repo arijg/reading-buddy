@@ -195,6 +195,60 @@ html, body {
   .statue-name { font-size: 1rem; }
 }
 
+/* ---------- Main menu: Reading vs Math ---------- */
+.choice-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.big-choice {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 40px 16px;
+  font: inherit;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  transition: transform .05s;
+}
+.big-choice:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.big-choice.reading { background: linear-gradient(180deg, #6fa0f5 0%, #5b8def 100%); }
+.big-choice.math    { background: linear-gradient(180deg, #5fd3a0 0%, #38a3a5 100%); }
+.big-choice .bc-emoji { font-size: 3.6rem; }
+.big-choice .bc-label { font-size: 1.7rem; }
+
+/* ---------- Math: difficulty toggle ---------- */
+.difficulty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.diff-label { font-size: 1.1rem; opacity: .7; margin-right: 2px; }
+.diff-btn {
+  border: 3px solid #38a3a5;
+  background: var(--card);
+  color: #2d8f8f;
+  font: inherit;
+  font-size: 1.3rem;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.diff-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.diff-btn.on { background: var(--green-d); color: #fff; border-color: var(--green-d); }
+
 .menu {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -378,6 +432,112 @@ html, body {
   40%  { transform: scale(1.2); opacity: 1; }
   100% { transform: scale(1);   opacity: 0; }
 }
+
+/* ---------- Math activities ---------- */
+.mathcard { padding: 26px 30px; }
+
+/* Rows of countable objects */
+.objrow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 10px;
+  max-width: 9em;
+  font-size: 2.6rem;
+  line-height: 1.1;
+}
+.obj { position: relative; display: inline-block; }
+.obj.crossed { opacity: .4; }
+.obj.crossed::after {
+  content: "✖";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #e23b5a;
+  font-size: .9em;
+  font-weight: bold;
+}
+
+/* Number sentence under a picture (e.g. 3 + 2 = ?) */
+.mathsentence {
+  font-size: 2.4rem;
+  letter-spacing: 2px;
+  color: var(--ink);
+}
+
+/* Adding / subtracting layout */
+.addsub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.addsub .op { font-size: 3rem; color: var(--green-d); }
+
+/* Number bond diagram */
+.bond svg { width: 220px; max-width: 70vw; height: auto; display: block; }
+
+/* Which is more? */
+.compare {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.compare-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.compare-num { font-size: 2rem; font-weight: bold; }
+.compare-vs { font-size: 1.4rem; opacity: .6; }
+
+/* What comes next? — sequence of cards */
+.seqrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.seq-card {
+  background: #eaf0ff;
+  border: 3px solid #9bb8f0;
+  border-radius: 16px;
+  min-width: 56px;
+  padding: 14px 10px;
+  font-size: 2.2rem;
+  color: var(--ink);
+}
+.seq-card.seq-q { background: #ffe9a8; border-color: #f0b429; }
+
+/* Answer choice buttons (shared by all math activities) */
+.choice-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.choice-btn {
+  border: none;
+  font: inherit;
+  font-size: 2rem;
+  min-width: 88px;
+  padding: 18px 24px;
+  border-radius: 20px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform .05s;
+}
+.choice-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.choice-btn.right { background: var(--green-d); color: #fff; }
+.choice-btn.wrong { background: var(--pink); color: #fff; opacity: .55; }
 
 /* Done screen */
 .done { text-align: center; }
@@ -625,6 +785,87 @@ window.READING_DATA = {
   </script>
   <script>
 /*
+ * Math Buddy — content & difficulty knobs live here.
+ * Edit this file to tune the numbers to exactly where your child is.
+ *
+ * Math is generated fresh each time (endless practice), so instead of word
+ * lists this file holds the RANGES that shape the problems. Difficulty is a
+ * 1–5 dial: each level just widens those ranges. To add a 6th level, copy a
+ * block and bump the numbers — it shows up on the Math home automatically.
+ *
+ * Style: Singapore-math flavored for K–1 — counting, number bonds
+ * (part–part–whole), addition & subtraction within 10/20, comparing
+ * quantities, and number sequences. Lots of pictures (concrete → pictorial),
+ * then the number sentence (abstract).
+ */
+
+window.MATH_DATA = {
+
+  // Friendly things to count. One emoji is picked per problem so a group of
+  // "5" is five of the SAME thing (easier to count than a jumble).
+  emojis: ["🍎", "🐸", "⭐", "🍓", "🐠", "🌸", "🐥", "🎈", "🦋", "🍪",
+           "🚗", "🐞", "🌼", "🐱", "🍊", "🐢"],
+
+  // Difficulty dial 1–5. Each level just widens the ranges below. Add a "6"
+  // block here and it shows up as a new button on the Math home automatically.
+  // Keys are kept as numeric strings so they sort 1→5 in the picker.
+  levels: {
+    "1": {
+      label: "1",
+      countMax:   12,   // "How many?" — count up to this
+      addMax:     12,   // adding — sums stay within this
+      subMax:     12,   // subtracting — start total within this
+      bondMax:    12,   // number bonds — whole within this
+      compareMax: 12,   // which is more — values within this
+      seqSteps:  [1],   // "what comes next" — count by 1s
+      seqMax:     20
+    },
+    "2": {
+      label: "2",
+      countMax:   15,
+      addMax:     15,
+      subMax:     15,
+      bondMax:    15,
+      compareMax: 15,
+      seqSteps:  [1],
+      seqMax:     25
+    },
+    "3": {
+      label: "3",
+      countMax:   20,
+      addMax:     20,
+      subMax:     20,
+      bondMax:    20,
+      compareMax: 20,
+      seqSteps:  [1, 2],          // start of skip-counting
+      seqMax:     30
+    },
+    "4": {
+      label: "4",
+      countMax:   20,
+      addMax:     25,
+      subMax:     25,
+      bondMax:    20,
+      compareMax: 25,
+      seqSteps:  [1, 2, 5],
+      seqMax:     50
+    },
+    "5": {
+      label: "5",
+      countMax:   20,
+      addMax:     30,
+      subMax:     30,
+      bondMax:    20,
+      compareMax: 30,
+      seqSteps:  [1, 2, 5, 10],   // skip-count by 10s too
+      seqMax:     60
+    }
+  }
+};
+
+  </script>
+  <script>
+/*
  * Reading Buddy — app logic.
  * Plain vanilla JS. No build step, no dependencies.
  *
@@ -636,6 +877,7 @@ window.READING_DATA = {
   "use strict";
 
   const DATA = window.READING_DATA;
+  const MATH = window.MATH_DATA;
   const app = document.getElementById("app");
   const VOWELS = new Set(["a", "e", "i", "o", "u"]);
 
@@ -686,6 +928,19 @@ window.READING_DATA = {
   function getStarCount() { return loadProgress().starCount || 0; }
   function getLevelsMastered() { return Object.keys(loadProgress().stars || {}).length; }
 
+  // Math difficulty — the "make it harder" setting. Stored on-device so it
+  // sticks between visits. Defaults to "easy". (Keys come from MATH.levels.)
+  function getMathLevel() {
+    const l = loadProgress().mathLevel;
+    return (l && MATH.levels[l]) ? l : "1";   // unknown/old values fall back to level 1
+  }
+  function setMathLevel(l) {
+    if (!MATH.levels[l]) return;
+    const p = loadProgress();
+    p.mathLevel = l;
+    saveProgress(p);
+  }
+
   // One-time cleanup: the old version awarded a star per item read, which
   // inflated starCount (e.g. 74). The new rule is 1 star per finished lesson,
   // so recompute the count from lessons actually completed. Runs once.
@@ -733,6 +988,58 @@ window.READING_DATA = {
     }
     return a;
   }
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // Build N answer buttons for a number question: the correct value plus
+  // distinct, nearby distractors, all kept inside [lo, hi], then shuffled.
+  function numberChoices(correct, n, lo, hi) {
+    const opts = new Set([correct]);
+    let guard = 0;
+    while (opts.size < n && guard++ < 200) {
+      const delta = randInt(1, 3) * (Math.random() < 0.5 ? -1 : 1);
+      let v = correct + delta;
+      if (v < lo) v = correct + Math.abs(delta);
+      if (v > hi) v = correct - Math.abs(delta);
+      if (v >= lo && v <= hi) opts.add(v);
+    }
+    for (let f = lo; opts.size < n && f <= hi; f++) opts.add(f);  // fallback fill
+    return shuffle([...opts]);
+  }
+
+  // A row of countable picture objects. `crossFrom` (optional) crosses out
+  // every object from that index on — used to show "take away" in subtraction.
+  function objectsRow(count, emoji, crossFrom) {
+    const box = el("div", { class: "objrow" });
+    for (let k = 0; k < count; k++) {
+      const crossed = (crossFrom != null && k >= crossFrom);
+      box.appendChild(el("span", { class: "obj" + (crossed ? " crossed" : "") }, [emoji]));
+    }
+    return box;
+  }
+
+  // A Singapore-style number bond: whole on top, two parts below, joined by
+  // lines. Pass null for the unknown — it renders as a highlighted "?".
+  function bondNode(whole, a, b) {
+    function circle(x, y, val, unknown) {
+      const fill = unknown ? "#ffe9a8" : "#eaf0ff";
+      const stroke = unknown ? "#f0b429" : "#9bb8f0";
+      return '<circle cx="' + x + '" cy="' + y + '" r="32" fill="' + fill + '" stroke="' + stroke + '" stroke-width="3"/>' +
+        '<text x="' + x + '" y="' + (y + 11) + '" text-anchor="middle" font-size="34" fill="#2d3142" font-family="inherit">' +
+        (unknown ? "?" : val) + '</text>';
+    }
+    const svg = '<svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">' +
+      '<line x1="120" y1="64" x2="60" y2="124" stroke="#9bb8f0" stroke-width="5" stroke-linecap="round"/>' +
+      '<line x1="120" y1="64" x2="180" y2="124" stroke="#9bb8f0" stroke-width="5" stroke-linecap="round"/>' +
+      circle(120, 42, whole, whole == null) +
+      circle(60, 150, a, a == null) +
+      circle(180, 150, b, b == null) +
+      '</svg>';
+    const d = el("div", { class: "bond" });
+    d.innerHTML = svg;
+    return d;
+  }
+
   function cheer(emoji) {
     const c = el("div", { class: "cheer" }, [emoji || "🎉"]);
     document.body.appendChild(c);
@@ -903,7 +1210,7 @@ window.READING_DATA = {
   /* ---------------- COLLECTION ---------------- */
   function renderCollection() {
     clear();
-    app.appendChild(topbar("My Collection 🏛️", renderHome));
+    app.appendChild(topbar("My Collection 🏛️", renderMainMenu));
     const n = getStarCount();
     const intro = el("div", { class: "prompt", style: "margin-bottom:8px" }, [
       "Collect a statue for every " + "milestone of stars!"
@@ -957,31 +1264,8 @@ window.READING_DATA = {
     return banner;
   }
 
-  /* ---------------- HOME ---------------- */
-  function renderHome() {
-    clear();
-    app.appendChild(el("h1", { class: "home-title" }, ["Reading Buddy 📖"]));
-    app.appendChild(el("p", { class: "home-sub" }, ["Pick something fun to do!"]));
-    app.appendChild(starsBanner());
-    app.appendChild(el("button", { class: "collection-btn", onclick: renderCollection }, [
-      "🏛️ My Collection  (" + unlockedStatueCount() + " / " + STATUES.length + ")"
-    ]));
-    const trickyN = getTrickyWords().length;
-    if (trickyN > 0) {
-      app.appendChild(el("button", { class: "tricky-btn", onclick: renderTricky }, [
-        "🤔 Review Tricky Words  (" + trickyN + ")"
-      ]));
-    }
-
-    const items = [
-      { emoji: "📚", label: "Stories",     go: renderStories },
-      { emoji: "🔤", label: "Sounds",      go: renderSounds },
-      { emoji: "🧩", label: "Blend Words", go: () => renderLevelPicker("blend") },
-      { emoji: "📕", label: "Read Words",  go: () => renderLevelPicker("read") },
-      { emoji: "📖", label: "Sentences",   go: () => renderLevelPicker("sentences") },
-      { emoji: "🕵️", label: "Real or Not?", go: renderRealOrNot },
-      { emoji: "❤️", label: "Heart Words", go: renderHeartWords }
-    ];
+  // Shared: turn a list of {emoji,label,go} into the 2-column card menu.
+  function menuGrid(items) {
     const menu = el("div", { class: "menu" });
     items.forEach(it => {
       menu.appendChild(el("button", { class: "menu-card", onclick: it.go }, [
@@ -989,13 +1273,274 @@ window.READING_DATA = {
         el("span", null, [it.label])
       ]));
     });
-    app.appendChild(menu);
+    return menu;
+  }
+
+  /* ---------------- MAIN MENU (pick Reading or Math) ---------------- */
+  // The top-level home. The star jar + collection live here now, so they
+  // celebrate everything she's done across BOTH reading and math.
+  function renderMainMenu() {
+    clear();
+    app.appendChild(el("h1", { class: "home-title" }, ["Learning Buddy 🌟"]));
+    app.appendChild(el("p", { class: "home-sub" }, ["What do you want to do today?"]));
+    app.appendChild(starsBanner());
+    app.appendChild(el("button", { class: "collection-btn", onclick: renderCollection }, [
+      "🏛️ My Collection  (" + unlockedStatueCount() + " / " + STATUES.length + ")"
+    ]));
+
+    const choices = el("div", { class: "choice-cards" }, [
+      el("button", { class: "big-choice reading", onclick: renderReadingHome }, [
+        el("span", { class: "bc-emoji" }, ["📖"]),
+        el("span", { class: "bc-label" }, ["Reading"])
+      ]),
+      el("button", { class: "big-choice math", onclick: renderMathHome }, [
+        el("span", { class: "bc-emoji" }, ["🔢"]),
+        el("span", { class: "bc-label" }, ["Math"])
+      ])
+    ]);
+    app.appendChild(choices);
+  }
+
+  /* ---------------- READING HOME ---------------- */
+  function renderReadingHome() {
+    clear();
+    app.appendChild(topbar("Reading 📖", renderMainMenu));
+
+    const trickyN = getTrickyWords().length;
+    if (trickyN > 0) {
+      app.appendChild(el("button", { class: "tricky-btn", onclick: renderTricky }, [
+        "🤔 Review Tricky Words  (" + trickyN + ")"
+      ]));
+    }
+
+    app.appendChild(menuGrid([
+      { emoji: "📚", label: "Stories",     go: renderStories },
+      { emoji: "🔤", label: "Sounds",      go: renderSounds },
+      { emoji: "🧩", label: "Blend Words", go: () => renderLevelPicker("blend") },
+      { emoji: "📕", label: "Read Words",  go: () => renderLevelPicker("read") },
+      { emoji: "📖", label: "Sentences",   go: () => renderLevelPicker("sentences") },
+      { emoji: "🕵️", label: "Real or Not?", go: renderRealOrNot },
+      { emoji: "❤️", label: "Heart Words", go: renderHeartWords }
+    ]));
+  }
+
+  /* ---------------- MATH HOME ---------------- */
+  function renderMathHome() {
+    clear();
+    app.appendChild(topbar("Math 🔢", renderMainMenu));
+
+    // Difficulty picker — this is the "make it harder" setting. Tapping a
+    // level just widens the number ranges used to build every problem.
+    const lvl = getMathLevel();
+    const diff = el("div", { class: "difficulty" }, [
+      el("span", { class: "diff-label" }, ["Level"])
+    ]);
+    Object.keys(MATH.levels).forEach(k => {
+      diff.appendChild(el("button", {
+        class: "diff-btn" + (lvl === k ? " on" : ""),
+        onclick: () => { setMathLevel(k); renderMathHome(); }
+      }, [MATH.levels[k].label]));
+    });
+    app.appendChild(diff);
+
+    app.appendChild(menuGrid([
+      { emoji: "🔢", label: "Counting",       go: mathCounting },
+      { emoji: "🔗", label: "Number Bonds",   go: mathBonds },
+      { emoji: "➕", label: "Adding",          go: mathAdding },
+      { emoji: "➖", label: "Subtracting",     go: mathSubtracting },
+      { emoji: "⚖️", label: "Which Is More?",  go: mathCompare },
+      { emoji: "➡️", label: "What Comes Next?", go: mathSequence }
+    ]));
+  }
+
+  /* ---------------- MATH: shared quiz runner ----------------
+     Every math activity is the same loop — show a question with a picture,
+     tap an answer, get a cheer, move on — so they share this runner. Each
+     activity just supplies makeQ(): a fresh { prompt, visual, sentence,
+     choices, correct } each round. A star is earned the first time the
+     activity is finished at a given difficulty. */
+  function runQuiz(opts) {
+    const total = opts.total || 8;
+    let i = 0, got = 0;
+
+    function show() {
+      clear();
+      app.appendChild(topbar(opts.title, renderMathHome));
+      const q = opts.makeQ();
+      const stage = el("div", { class: "stage" });
+
+      stage.appendChild(el("div", { class: "prompt" }, [q.prompt]));
+      if (q.visual) stage.appendChild(el("div", { class: "bigcard mathcard" }, [q.visual]));
+      if (q.sentence) stage.appendChild(el("div", { class: "mathsentence" }, [q.sentence]));
+
+      let answered = false, firstTry = true;
+      const row = el("div", { class: "choice-row" });
+      q.choices.forEach(c => {
+        const btn = el("button", { class: "choice-btn", onclick: function () {
+          if (answered) return;
+          if (c === q.correct) {
+            answered = true;
+            this.classList.add("right");
+            if (firstTry) got++;
+            cheer("⭐");
+            setTimeout(next, 750);
+          } else {
+            this.classList.add("wrong");
+            firstTry = false;
+          }
+        } }, [String(c)]);
+        row.appendChild(btn);
+      });
+      stage.appendChild(row);
+      stage.appendChild(el("div", { class: "progress" }, [(i + 1) + " / " + total]));
+      app.appendChild(stage);
+    }
+    function next() {
+      i++;
+      if (i >= total) {
+        completeLesson(opts.lessonKey);
+        renderDone(opts.title, opts.emoji, () => runQuiz(opts), "You got " + got + " of " + total + "!");
+      } else show();
+    }
+    show();
+  }
+
+  /* ---------------- MATH ACTIVITIES ---------------- */
+
+  // How many? — count a group of objects.
+  function mathCounting() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "Counting 🔢", emoji: "🔢", lessonKey: "math-count-" + lvl,
+      makeQ: function () {
+        const n = randInt(1, cfg.countMax);
+        return {
+          prompt: "How many?",
+          visual: objectsRow(n, pick(MATH.emojis)),
+          choices: numberChoices(n, 4, 1, cfg.countMax),
+          correct: n
+        };
+      }
+    });
+  }
+
+  // Number bonds — find the missing part (part–part–whole).
+  function mathBonds() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "Number Bonds 🔗", emoji: "🔗", lessonKey: "math-bond-" + lvl,
+      makeQ: function () {
+        const whole = randInt(3, cfg.bondMax);
+        const a = randInt(1, whole - 1), b = whole - a;
+        const hideB = Math.random() < 0.5;
+        const correct = hideB ? b : a;
+        return {
+          prompt: "What is the missing part?",
+          visual: bondNode(whole, hideB ? a : null, hideB ? null : b),
+          choices: numberChoices(correct, 4, 0, cfg.bondMax),
+          correct: correct
+        };
+      }
+    });
+  }
+
+  // Adding — two groups, how many altogether?
+  function mathAdding() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "Adding ➕", emoji: "➕", lessonKey: "math-add-" + lvl,
+      makeQ: function () {
+        const a = randInt(1, cfg.addMax - 1);
+        const b = randInt(1, cfg.addMax - a);
+        const emoji = pick(MATH.emojis);
+        const visual = el("div", { class: "addsub" }, [
+          objectsRow(a, emoji),
+          el("div", { class: "op" }, ["+"]),
+          objectsRow(b, emoji)
+        ]);
+        return {
+          prompt: "How many altogether?",
+          visual: visual,
+          sentence: a + " + " + b + " = ?",
+          choices: numberChoices(a + b, 4, 1, cfg.addMax),
+          correct: a + b
+        };
+      }
+    });
+  }
+
+  // Subtracting — take some away, how many are left?
+  function mathSubtracting() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "Subtracting ➖", emoji: "➖", lessonKey: "math-sub-" + lvl,
+      makeQ: function () {
+        const total = randInt(2, cfg.subMax);
+        const take = randInt(1, total - 1);
+        const left = total - take;
+        return {
+          prompt: "How many are left?",
+          visual: objectsRow(total, pick(MATH.emojis), left),  // cross out the last `take`
+          sentence: total + " − " + take + " = ?",
+          choices: numberChoices(left, 4, 0, cfg.subMax),
+          correct: left
+        };
+      }
+    });
+  }
+
+  // Which is more? — compare two groups.
+  function mathCompare() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "Which Is More? ⚖️", emoji: "⚖️", lessonKey: "math-compare-" + lvl,
+      makeQ: function () {
+        const a = randInt(1, cfg.compareMax);
+        let b = randInt(1, cfg.compareMax);
+        while (b === a) b = randInt(1, cfg.compareMax);
+        const e1 = pick(MATH.emojis), e2 = pick(MATH.emojis);
+        const visual = el("div", { class: "compare" }, [
+          el("div", { class: "compare-side" }, [objectsRow(a, e1), el("div", { class: "compare-num" }, [String(a)])]),
+          el("div", { class: "compare-vs" }, ["vs"]),
+          el("div", { class: "compare-side" }, [objectsRow(b, e2), el("div", { class: "compare-num" }, [String(b)])])
+        ]);
+        return {
+          prompt: "Which group has MORE? Tap the bigger number.",
+          visual: visual,
+          choices: shuffle([a, b]),
+          correct: Math.max(a, b)
+        };
+      }
+    });
+  }
+
+  // What comes next? — number sequences (and skip-counting when harder).
+  function mathSequence() {
+    const lvl = getMathLevel(), cfg = MATH.levels[lvl];
+    runQuiz({
+      title: "What Comes Next? ➡️", emoji: "➡️", lessonKey: "math-seq-" + lvl,
+      makeQ: function () {
+        const step = pick(cfg.seqSteps);
+        const start = randInt(0, Math.max(0, cfg.seqMax - step * 3));
+        const seq = [start, start + step, start + 2 * step];
+        const answer = start + 3 * step;
+        const visual = el("div", { class: "seqrow" });
+        seq.forEach(v => visual.appendChild(el("div", { class: "seq-card" }, [String(v)])));
+        visual.appendChild(el("div", { class: "seq-card seq-q" }, ["?"]));
+        return {
+          prompt: step === 1 ? "What number comes next?" : "Count by " + step + "s. What comes next?",
+          visual: visual,
+          choices: numberChoices(answer, 4, 0, cfg.seqMax + step * 3),
+          correct: answer
+        };
+      }
+    });
   }
 
   /* ---------------- LEVEL PICKER ---------------- */
   function renderLevelPicker(mode) {
     clear();
-    app.appendChild(topbar("Pick a Level", renderHome));
+    app.appendChild(topbar("Pick a Level", renderReadingHome));
     const stars = (loadProgress().stars) || {};
     const list = el("div", { class: "level-list" });
     DATA.levels.forEach(lvl => {
@@ -1050,7 +1595,7 @@ window.READING_DATA = {
 
     function show() {
       clear();
-      app.appendChild(topbar("Sounds 🔤", renderHome));
+      app.appendChild(topbar("Sounds 🔤", renderReadingHome));
       const card = deck[i];
       const stage = el("div", { class: "stage" });
 
@@ -1210,7 +1755,7 @@ window.READING_DATA = {
 
     function show() {
       clear();
-      app.appendChild(topbar("Real or Not? 🕵️", renderHome));
+      app.appendChild(topbar("Real or Not? 🕵️", renderReadingHome));
       const card = deck[i];
       const stage = el("div", { class: "stage" });
 
@@ -1242,14 +1787,14 @@ window.READING_DATA = {
     const words = getTrickyWords();   // snapshot of the current review list
     if (words.length === 0) {
       clear();
-      app.appendChild(topbar("Tricky Words 🤔", renderHome));
+      app.appendChild(topbar("Tricky Words 🤔", renderReadingHome));
       const stage = el("div", { class: "stage" });
       stage.appendChild(el("div", { class: "done" }, [
         el("div", { class: "big" }, ["🎉"]),
         el("h2", null, ["No tricky words!"]),
         el("p", { class: "prompt" }, ["When something is hard, tap \"Tricky\" in any activity and it will show up here to practice."])
       ]));
-      stage.appendChild(el("button", { class: "btn ghost", onclick: renderHome }, ["🏠 Home"]));
+      stage.appendChild(el("button", { class: "btn ghost", onclick: renderReadingHome }, ["🏠 Home"]));
       app.appendChild(stage);
       return;
     }
@@ -1259,7 +1804,7 @@ window.READING_DATA = {
 
     function show() {
       clear();
-      app.appendChild(topbar("Tricky Words 🤔", renderHome));
+      app.appendChild(topbar("Tricky Words 🤔", renderReadingHome));
       const word = deck[i];
       const stage = el("div", { class: "stage" });
 
@@ -1292,7 +1837,7 @@ window.READING_DATA = {
 
     function show() {
       clear();
-      app.appendChild(topbar("Heart Words ❤️", renderHome));
+      app.appendChild(topbar("Heart Words ❤️", renderReadingHome));
       const word = words[i];
       const stage = el("div", { class: "stage" });
 
@@ -1323,7 +1868,7 @@ window.READING_DATA = {
   /* ---------------- ACTIVITY: STORIES ---------------- */
   function renderStories() {
     clear();
-    app.appendChild(topbar("Stories 📚", renderHome));
+    app.appendChild(topbar("Stories 📚", renderReadingHome));
     app.appendChild(el("div", { class: "prompt", style: "margin-bottom:10px" }, ["Pick a story to read!"]));
     const list = el("div", { class: "story-list" });
     DATA.stories.forEach(s => {
@@ -1380,7 +1925,7 @@ window.READING_DATA = {
   /* ---------------- DONE SCREEN ---------------- */
   function renderDone(title, emoji, again, subtitle) {
     clear();
-    app.appendChild(topbar(title, renderHome));
+    app.appendChild(topbar(title, renderMainMenu));
     const stage = el("div", { class: "stage" });
     stage.appendChild(el("div", { class: "done" }, [
       el("div", { class: "big" }, [emoji + " 🌟"]),
@@ -1389,14 +1934,14 @@ window.READING_DATA = {
     ]));
     stage.appendChild(el("div", { class: "btn-row" }, [
       el("button", { class: "btn blue", onclick: again }, ["Again 🔁"]),
-      el("button", { class: "btn ghost", onclick: renderHome }, ["🏠 Home"])
+      el("button", { class: "btn ghost", onclick: renderMainMenu }, ["🏠 Home"])
     ]));
     app.appendChild(stage);
   }
 
   /* ---------------- start ---------------- */
   migrateProgress();
-  renderHome();
+  renderMainMenu();
 })();
 
   </script>

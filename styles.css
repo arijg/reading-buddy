@@ -188,6 +188,60 @@ html, body {
   .statue-name { font-size: 1rem; }
 }
 
+/* ---------- Main menu: Reading vs Math ---------- */
+.choice-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.big-choice {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 40px 16px;
+  font: inherit;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  transition: transform .05s;
+}
+.big-choice:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.big-choice.reading { background: linear-gradient(180deg, #6fa0f5 0%, #5b8def 100%); }
+.big-choice.math    { background: linear-gradient(180deg, #5fd3a0 0%, #38a3a5 100%); }
+.big-choice .bc-emoji { font-size: 3.6rem; }
+.big-choice .bc-label { font-size: 1.7rem; }
+
+/* ---------- Math: difficulty toggle ---------- */
+.difficulty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.diff-label { font-size: 1.1rem; opacity: .7; margin-right: 2px; }
+.diff-btn {
+  border: 3px solid #38a3a5;
+  background: var(--card);
+  color: #2d8f8f;
+  font: inherit;
+  font-size: 1.3rem;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.diff-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.diff-btn.on { background: var(--green-d); color: #fff; border-color: var(--green-d); }
+
 .menu {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -371,6 +425,112 @@ html, body {
   40%  { transform: scale(1.2); opacity: 1; }
   100% { transform: scale(1);   opacity: 0; }
 }
+
+/* ---------- Math activities ---------- */
+.mathcard { padding: 26px 30px; }
+
+/* Rows of countable objects */
+.objrow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 10px;
+  max-width: 9em;
+  font-size: 2.6rem;
+  line-height: 1.1;
+}
+.obj { position: relative; display: inline-block; }
+.obj.crossed { opacity: .4; }
+.obj.crossed::after {
+  content: "✖";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #e23b5a;
+  font-size: .9em;
+  font-weight: bold;
+}
+
+/* Number sentence under a picture (e.g. 3 + 2 = ?) */
+.mathsentence {
+  font-size: 2.4rem;
+  letter-spacing: 2px;
+  color: var(--ink);
+}
+
+/* Adding / subtracting layout */
+.addsub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.addsub .op { font-size: 3rem; color: var(--green-d); }
+
+/* Number bond diagram */
+.bond svg { width: 220px; max-width: 70vw; height: auto; display: block; }
+
+/* Which is more? */
+.compare {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.compare-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.compare-num { font-size: 2rem; font-weight: bold; }
+.compare-vs { font-size: 1.4rem; opacity: .6; }
+
+/* What comes next? — sequence of cards */
+.seqrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.seq-card {
+  background: #eaf0ff;
+  border: 3px solid #9bb8f0;
+  border-radius: 16px;
+  min-width: 56px;
+  padding: 14px 10px;
+  font-size: 2.2rem;
+  color: var(--ink);
+}
+.seq-card.seq-q { background: #ffe9a8; border-color: #f0b429; }
+
+/* Answer choice buttons (shared by all math activities) */
+.choice-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.choice-btn {
+  border: none;
+  font: inherit;
+  font-size: 2rem;
+  min-width: 88px;
+  padding: 18px 24px;
+  border-radius: 20px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform .05s;
+}
+.choice-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.choice-btn.right { background: var(--green-d); color: #fff; }
+.choice-btn.wrong { background: var(--pink); color: #fff; opacity: .55; }
 
 /* Done screen */
 .done { text-align: center; }
