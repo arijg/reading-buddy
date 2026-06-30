@@ -29,6 +29,89 @@
     } catch (e) { /* speech not available — fail quietly */ }
   }
 
+  /* ---------------- Phoneme audio (recorded on-device) ----------------
+     TTS can't say true phonemes (/a/, /sh/), so a grown-up records each
+     sound ONCE in the Parent area. Clips live in IndexedDB on this device
+     only — nothing leaves the iPad, same as the rest of the app. When a
+     sound has no recording yet, activities fall back to "say it yourself". */
+  const PhonemeAudio = (function () {
+    const DB_NAME = "learning-buddy-audio", STORE = "phonemes";
+    let dbp = null;
+    const urlCache = {};
+    function open() {
+      if (dbp) return dbp;
+      dbp = new Promise(function (res, rej) {
+        try {
+          const r = indexedDB.open(DB_NAME, 1);
+          r.onupgradeneeded = function () { r.result.createObjectStore(STORE); };
+          r.onsuccess = function () { res(r.result); };
+          r.onerror = function () { rej(r.error); };
+        } catch (e) { rej(e); }
+      });
+      return dbp;
+    }
+    function tx(mode) { return open().then(function (db) { return db.transaction(STORE, mode).objectStore(STORE); }); }
+    function req(r) { return new Promise(function (res, rej) { r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
+    return {
+      supported: (function () { try { return !!window.indexedDB && !!window.MediaRecorder; } catch (e) { return false; } })(),
+      get: function (g) { return tx("readonly").then(function (s) { return req(s.get(g)); }); },
+      put: function (g, blob) { return tx("readwrite").then(function (s) { delete urlCache[g]; return req(s.put(blob, g)); }); },
+      del: function (g) { return tx("readwrite").then(function (s) { delete urlCache[g]; return req(s.delete(g)); }); },
+      keys: function () { return tx("readonly").then(function (s) { return req(s.getAllKeys()); }).catch(function () { return []; }); },
+      play: function (g) {
+        return this.get(g).then(function (blob) {
+          if (!blob) return false;
+          const url = urlCache[g] || (urlCache[g] = URL.createObjectURL(blob));
+          const a = new Audio(url); a.play().catch(function () {}); return true;
+        }).catch(function () { return false; });
+      }
+    };
+  })();
+
+  // A fast, synchronous "is this sound recorded?" for showing/hiding buttons.
+  // Kept in sync with IndexedDB; preloaded once at startup.
+  let recordedSounds = new Set();
+  function refreshRecordedSounds() {
+    return PhonemeAudio.keys().then(function (ks) { recordedSounds = new Set(ks); return recordedSounds; });
+  }
+  function hasPhoneme(g) { return recordedSounds.has(g); }
+  // Play a recorded phoneme if we have one; otherwise speak the keyword cue.
+  function playPhoneme(g, keyword) {
+    if (hasPhoneme(g)) PhonemeAudio.play(g);
+    else if (keyword) speak(keyword);
+  }
+
+  /* ---------------- Sound effects (synthesized, no files) ----------------
+     A short happy arpeggio on success, a gentle two-note "try again". Built
+     with the Web Audio API so there are no audio files to ship or cache. */
+  let _audioCtx = null;
+  function tone(freq, start, dur, gainVal) {
+    const ctx = _audioCtx, t0 = ctx.currentTime + start;
+    const osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = "sine"; osc.frequency.value = freq;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(gainVal, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.02);
+  }
+  function chime(ok) {
+    try {
+      _audioCtx = _audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (_audioCtx.state === "suspended") _audioCtx.resume();
+      const notes = ok ? [523.25, 659.25, 783.99] : [392.0, 311.13];  // C-E-G up, or a soft fall
+      notes.forEach(function (f, k) { tone(f, k * 0.09, 0.22, 0.16); });
+    } catch (e) { /* no audio — fine */ }
+  }
+  // A single soft "tick" — used when a letter tile drops correctly into place.
+  function pip() {
+    try {
+      _audioCtx = _audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (_audioCtx.state === "suspended") _audioCtx.resume();
+      tone(660, 0, 0.12, 0.12);
+    } catch (e) {}
+  }
+
   /* ---------------- Progress (on-device only) ---------------- */
   const STORE_KEY = "reading-buddy-progress";
   function loadProgress() {
@@ -192,10 +275,43 @@
     return d;
   }
 
-  function cheer(emoji) {
-    const c = el("div", { class: "cheer" }, [emoji || "🎉"]);
-    document.body.appendChild(c);
-    setTimeout(() => c.remove(), 800);
+  /* ---------------- Buddy mascot ----------------
+     A friendly star character that gives the app a face. It reacts on every
+     cheer (happy bounce) and greets her on the home screens. SVG only — no
+     image files to ship. */
+  function buddySvg(mood) {
+    // mood: "happy" (default), "wave", "think"
+    const eyes = mood === "think"
+      ? '<circle cx="78" cy="98" r="7" fill="#3a2f1f"/><circle cx="122" cy="98" r="7" fill="#3a2f1f"/>'
+      : '<circle cx="78" cy="96" r="8" fill="#3a2f1f"/><circle cx="122" cy="96" r="8" fill="#3a2f1f"/>' +
+        '<circle cx="81" cy="93" r="2.6" fill="#fff"/><circle cx="125" cy="93" r="2.6" fill="#fff"/>';
+    const mouth = mood === "think"
+      ? '<path d="M88 120 q 12 6 24 0" stroke="#b5791a" stroke-width="4" fill="none" stroke-linecap="round"/>'
+      : '<path d="M84 116 q 16 18 32 0" stroke="#b5791a" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M100 14 L122 74 L186 78 L136 118 L154 182 L100 146 L46 182 L64 118 L14 78 L78 74 Z" ' +
+      'fill="#ffd45e" stroke="#f0b429" stroke-width="5" stroke-linejoin="round"/>' +
+      '<circle cx="62" cy="112" r="9" fill="#ffb3c1" opacity="0.8"/>' +
+      '<circle cx="138" cy="112" r="9" fill="#ffb3c1" opacity="0.8"/>' +
+      eyes + mouth +
+      '</svg>';
+  }
+  // A buddy element to drop onto a screen. `size` is a CSS class suffix.
+  function buddyNode(mood, cls) {
+    const b = el("div", { class: "buddy " + (cls || "") });
+    b.innerHTML = buddySvg(mood);
+    return b;
+  }
+
+  function cheer(emoji, quiet) {
+    if (!quiet) chime(true);
+    const wrap = el("div", { class: "cheer" });
+    const b = el("div", { class: "cheer-buddy" });
+    b.innerHTML = buddySvg("happy");
+    wrap.appendChild(b);
+    wrap.appendChild(el("div", { class: "cheer-emoji" }, [emoji || "🎉"]));
+    document.body.appendChild(wrap);
+    setTimeout(() => wrap.remove(), 900);
   }
   function topbar(title, onBack) {
     return el("div", { class: "topbar" }, [
@@ -479,6 +595,160 @@
     app.appendChild(statueShelf("🔢 Math Statues", MATH_STATUES, getSubjectStars("math")));
   }
 
+  /* ---------------- PARENT AREA ----------------
+     A little dashboard for a grown-up: see what she's mastered, what's still
+     tricky, and record the phoneme sounds. Gated behind a simple multiplication
+     question so a 5-year-old doesn't wander in. */
+  function openParentGate() {
+    const a = randInt(3, 9), b = randInt(3, 9), correct = a * b;
+    const overlay = el("div", { class: "celebrate-overlay" });
+    // Four distinct, plausible answers near the product.
+    const opts = new Set([correct]);
+    [a, -a, b, -b, 1, -1, a + b, -(a + b)].forEach(function (d) {
+      const v = correct + d;
+      if (opts.size < 4 && v > 0 && v !== correct) opts.add(v);
+    });
+    const choices = shuffle([...opts]);
+    const row = el("div", { class: "btn-row", style: "margin-top:14px" });
+    choices.forEach(v => {
+      row.appendChild(el("button", { class: "btn blue", onclick: function () {
+        if (v === correct) { overlay.remove(); renderParent(); }
+        else { this.classList.add("shake"); setTimeout(() => this.classList.remove("shake"), 400); }
+      } }, [String(v)]));
+    });
+    overlay.appendChild(el("div", { class: "celebrate-card" }, [
+      el("div", { class: "celebrate-title" }, ["For Grown-Ups 🔒"]),
+      el("p", { class: "prompt" }, ["What is " + a + " × " + b + "?"]),
+      row,
+      el("button", { class: "btn ghost", style: "margin-top:14px", onclick: () => overlay.remove() }, ["Cancel"])
+    ]));
+    document.body.appendChild(overlay);
+  }
+
+  function renderParent() {
+    clear();
+    app.appendChild(topbar("For Grown-Ups 👩‍👧", renderMainMenu));
+
+    // --- Summary stats ---
+    app.appendChild(el("div", { class: "parent-stats" }, [
+      el("div", { class: "pstat" }, [el("b", null, [String(getStarCount())]), el("span", null, ["stars"])]),
+      el("div", { class: "pstat" }, [el("b", null, [getLevelsMastered() + "/" + DATA.levels.length]), el("span", null, ["levels mastered"])]),
+      el("div", { class: "pstat" }, [el("b", null, [unlockedStatueCount() + "/" + totalStatueCount()]), el("span", null, ["statues"])])
+    ]));
+
+    // --- Per-level reading progress (which activities she has finished) ---
+    const done = loadProgress().lessonsDone || {};
+    const stars = loadProgress().stars || {};
+    const table = el("div", { class: "parent-table" });
+    table.appendChild(el("div", { class: "ptr phead" }, [
+      el("span", null, ["Level"]), el("span", null, ["🧩"]), el("span", null, ["🔡"]),
+      el("span", null, ["📕"]), el("span", null, ["📖"]), el("span", null, ["⭐"])
+    ]));
+    function dot(on) { return el("span", null, [on ? "✅" : "·"]); }
+    DATA.levels.forEach(lvl => {
+      table.appendChild(el("div", { class: "ptr" }, [
+        el("span", { class: "pname" }, [lvl.id + ". " + lvl.name]),
+        dot(done["blend-" + lvl.id]),
+        dot(done["build-" + lvl.id]),
+        dot(done["read-" + lvl.id]),
+        dot(done["sentences-" + lvl.id]),
+        el("span", null, [stars[lvl.id] ? "⭐" : "☆"])
+      ]));
+    });
+    app.appendChild(el("h2", { class: "collection-heading" }, ["Reading progress"]));
+    app.appendChild(table);
+
+    // --- Tricky words she's flagged ---
+    const tricky = getTrickyWords();
+    app.appendChild(el("h2", { class: "collection-heading" }, ["Tricky words (" + tricky.length + ")"]));
+    if (tricky.length) {
+      const chips = el("div", { class: "tricky-chips" });
+      tricky.forEach(w => chips.appendChild(el("span", { class: "tchip" }, [w])));
+      app.appendChild(chips);
+    } else {
+      app.appendChild(el("p", { class: "prompt" }, ["Nothing flagged as tricky right now. 🎉"]));
+    }
+
+    // --- Tools ---
+    app.appendChild(el("button", { class: "collection-btn", style: "margin-top:20px", onclick: renderRecordSounds }, [
+      "🎙️ Record the Sounds"
+    ]));
+    app.appendChild(el("button", { class: "btn ghost", style: "width:100%;margin-top:12px", onclick: function () {
+      if (window.confirm("Reset ALL progress — stars, statues, tricky words? This can't be undone.")) {
+        try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+        renderMainMenu();
+      }
+    } }, ["♻️ Reset progress"]));
+  }
+
+  /* ---------------- PARENT: record phoneme sounds ----------------
+     Records each letter-sound once with the device mic and stores it in
+     IndexedDB (on-device only). These power the Sounds & Blend activities. */
+  function renderRecordSounds() {
+    clear();
+    app.appendChild(topbar("Record the Sounds 🎙️", renderParent));
+
+    if (!PhonemeAudio.supported) {
+      app.appendChild(el("p", { class: "prompt" }, [
+        "Recording isn't available in this browser. Open the installed app (Safari on the iPad) to record sounds."
+      ]));
+      return;
+    }
+
+    app.appendChild(el("p", { class: "prompt", style: "margin-bottom:6px" }, [
+      "Tap ● and say the SOUND, not the letter name — \"/a/\" (as in apple), not \"ay\". " +
+      "Each clip is ~1.5s and saved on this device only."
+    ]));
+
+    const list = el("div", { class: "sound-list" });
+    let recording = false;
+
+    DATA.letterSounds.forEach(card => {
+      const have = hasPhoneme(card.g);
+      const row = el("div", { class: "sound-row" + (have ? " has" : "") });
+      row.appendChild(el("span", { class: "sound-g" }, [card.g]));
+      row.appendChild(el("span", { class: "sound-kw" }, [card.emoji + " " + card.keyword]));
+
+      const recBtn = el("button", { class: "rec-btn", onclick: function () {
+        if (recording) return;
+        recordPhoneme(card.g, this);
+      } }, [have ? "● Re-record" : "● Record"]);
+      row.appendChild(recBtn);
+
+      if (have) {
+        row.appendChild(el("button", { class: "hear-btn small", onclick: () => PhonemeAudio.play(card.g) }, ["▶︎"]));
+        row.appendChild(el("button", { class: "hear-btn small", onclick: function () {
+          PhonemeAudio.del(card.g).then(() => refreshRecordedSounds()).then(renderRecordSounds);
+        } }, ["🗑️"]));
+      }
+      list.appendChild(row);
+    });
+    app.appendChild(list);
+
+    function recordPhoneme(g, btn) {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+        recording = true;
+        btn.textContent = "● Recording…";
+        btn.classList.add("recording");
+        const rec = new MediaRecorder(stream);
+        const chunks = [];
+        rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        rec.onstop = function () {
+          stream.getTracks().forEach(t => t.stop());
+          const blob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
+          PhonemeAudio.put(g, blob)
+            .then(() => refreshRecordedSounds())
+            .then(() => { recording = false; renderRecordSounds(); });
+        };
+        rec.start();
+        setTimeout(() => { if (rec.state !== "inactive") rec.stop(); }, 1500);
+      }).catch(function () {
+        recording = false;
+        window.alert("Couldn't use the microphone. Check the mic permission for this site.");
+      });
+    }
+  }
+
   /* ---------------- Star jar (home accomplishments) ---------------- */
   function starsBanner() {
     const n = getStarCount();
@@ -523,8 +793,13 @@
   // celebrate everything she's done across BOTH reading and math.
   function renderMainMenu() {
     clear();
-    app.appendChild(el("h1", { class: "home-title" }, ["Learning Buddy 🌟"]));
-    app.appendChild(el("p", { class: "home-sub" }, ["What do you want to do today?"]));
+    app.appendChild(el("div", { class: "home-hello" }, [
+      buddyNode("wave", "hello"),
+      el("div", null, [
+        el("h1", { class: "home-title" }, ["Learning Buddy 🌟"]),
+        el("p", { class: "home-sub" }, ["What do you want to do today?"])
+      ])
+    ]));
     app.appendChild(starsBanner());
     app.appendChild(el("button", { class: "collection-btn", onclick: renderCollection }, [
       "🏛️ My Collection  (" + unlockedStatueCount() + " / " + totalStatueCount() + ")"
@@ -541,6 +816,10 @@
       ])
     ]);
     app.appendChild(choices);
+
+    app.appendChild(el("button", { class: "grownup-btn", onclick: openParentGate }, [
+      "🔒 For Grown-Ups"
+    ]));
   }
 
   /* ---------------- READING HOME ---------------- */
@@ -559,6 +838,7 @@
       { emoji: "📚", label: "Stories",     go: renderStories },
       { emoji: "🔤", label: "Sounds",      go: renderSounds },
       { emoji: "🧩", label: "Blend Words", go: () => renderLevelPicker("blend") },
+      { emoji: "🔡", label: "Build Words", go: () => renderLevelPicker("build") },
       { emoji: "📕", label: "Read Words",  go: () => renderLevelPicker("read") },
       { emoji: "📖", label: "Sentences",   go: () => renderLevelPicker("sentences") },
       { emoji: "🕵️", label: "Real or Not?", go: renderRealOrNot },
@@ -629,6 +909,7 @@
           } else {
             this.classList.add("wrong");
             firstTry = false;
+            chime(false);
           }
         } }, [String(c)]);
         row.appendChild(btn);
@@ -790,6 +1071,7 @@
         class: "level-card",
         onclick: () => {
           if (mode === "blend") renderBlend(lvl);
+          else if (mode === "build") renderBuild(lvl);
           else if (mode === "sentences") renderSentences(lvl);
           else renderRead(lvl);
         }
@@ -805,16 +1087,21 @@
     app.appendChild(list);
   }
 
-  /* helper: render a word as tappable letters (groups digraphs visually) */
-  function wordLetters(word, onTap) {
-    const box = el("div", { class: "bigword" });
-    // split into grapheme chunks: keep sh/ch/th together
+  /* split a word into grapheme chunks, keeping digraphs (sh/ch/th) together */
+  function graphemes(word) {
     const chunks = [];
     for (let i = 0; i < word.length; i++) {
       const two = word.slice(i, i + 2);
       if (two === "sh" || two === "ch" || two === "th") { chunks.push(two); i++; }
       else chunks.push(word[i]);
     }
+    return chunks;
+  }
+
+  /* helper: render a word as tappable letters (groups digraphs visually) */
+  function wordLetters(word, onTap) {
+    const box = el("div", { class: "bigword" });
+    const chunks = graphemes(word);
     chunks.forEach(ch => {
       const isVowel = ch.length === 1 && VOWELS.has(ch);
       const span = el("span", {
@@ -854,11 +1141,13 @@
       ]);
       stage.appendChild(reveal);
 
+      // If a grown-up recorded this sound, "Hear the sound" plays the real
+      // phoneme; otherwise it falls back to the keyword cue + picture.
       stage.appendChild(el("div", { class: "btn-row" }, [
         el("button", { class: "hear-btn", onclick: () => {
           reveal.style.visibility = "visible";
-          speak(card.keyword);            // keyword cue (TTS can't do lone phonemes well)
-        } }, ["👂 Check"]),
+          playPhoneme(card.g, card.keyword);
+        } }, [hasPhoneme(card.g) ? "🔊 Hear the sound" : "👂 Check"]),
         el("button", { class: "btn green", onclick: next }, ["Next →"])
       ]));
 
@@ -885,7 +1174,8 @@
       const stage = el("div", { class: "stage" });
 
       stage.appendChild(el("div", { class: "prompt" }, ["Tap each letter and say its sound… then blend it together!"]));
-      stage.appendChild(el("div", { class: "bigcard" }, [ wordLetters(word) ]));
+      // Tapping a letter plays its recorded sound (if a grown-up recorded it).
+      stage.appendChild(el("div", { class: "bigcard" }, [ wordLetters(word, (ch) => playPhoneme(ch)) ]));
 
       stage.appendChild(el("div", { class: "btn-row" }, [
         el("button", { class: "hear-btn", onclick: () => speak(word, 0.6) }, ["👂 Hear it slow"]),
@@ -907,6 +1197,87 @@
       i++;
       if (i >= words.length) { completeLesson("blend-" + lvl.id); markLevelStar(lvl.id); renderDone("Blend Words", "🧩", () => renderBlend(lvl)); }
       else show();
+    }
+    show();
+  }
+
+  /* ---------------- ACTIVITY: BUILD A WORD (spelling / encoding) ----------------
+     Decoding's twin: she HEARS a word and SPELLS it by tapping letter tiles in
+     order. Encoding is half of the OG method, and it's a check she can't fake by
+     just nodding along. Tiles are the word's own graphemes, shuffled. */
+  function renderBuild(lvl) {
+    const words = shuffle(lvl.words);
+    let i = 0, got = 0;
+
+    function show() {
+      clear();
+      app.appendChild(topbar("Build: " + lvl.name + " 🔡", () => renderLevelPicker("build")));
+      const word = words[i];
+      const target = graphemes(word);
+      let pos = 0;                 // next slot to fill
+
+      const stage = el("div", { class: "stage" });
+      stage.appendChild(el("div", { class: "prompt" }, ["Listen, then build the word!"]));
+
+      // Hear-it buttons (TTS does whole words reliably).
+      stage.appendChild(el("div", { class: "btn-row" }, [
+        el("button", { class: "hear-btn", onclick: () => speak(word, 0.6) }, ["👂 Hear it slow"]),
+        el("button", { class: "hear-btn", onclick: () => speak(word, 0.95) }, ["🔊 Hear it"])
+      ]));
+
+      // Empty slots she fills left-to-right.
+      const slotRow = el("div", { class: "build-slots" });
+      const slotEls = target.map(() => {
+        const s = el("div", { class: "build-slot" }, [""]);
+        slotRow.appendChild(s);
+        return s;
+      });
+      stage.appendChild(el("div", { class: "bigcard build-card" }, [slotRow]));
+
+      // Tile tray — the word's graphemes, shuffled.
+      const order = shuffle(target.map((g, k) => ({ g: g, k: k })));
+      const tray = el("div", { class: "tile-tray" });
+      order.forEach(item => {
+        const isVowel = item.g.length === 1 && VOWELS.has(item.g);
+        const tile = el("button", {
+          class: "tile" + (isVowel ? " vowel" : ""),
+          onclick: function () {
+            if (this.disabled) return;
+            if (item.g === target[pos]) {            // correct next letter
+              this.classList.add("used");
+              this.disabled = true;
+              slotEls[pos].textContent = item.g;
+              slotEls[pos].classList.add("filled");
+              pos++;
+              pip();
+              if (pos === target.length) finish();
+            } else {                                  // not the next sound
+              this.classList.add("shake");
+              chime(false);
+              setTimeout(() => this.classList.remove("shake"), 400);
+            }
+          }
+        }, [item.g]);
+        tray.appendChild(tile);
+      });
+      stage.appendChild(tray);
+      stage.appendChild(el("div", { class: "progress" }, [(i + 1) + " / " + words.length]));
+      app.appendChild(stage);
+    }
+
+    function finish() {
+      const word = words[i];
+      got++;
+      removeTricky(word);
+      speak(word, 0.9);
+      cheer("⭐");
+      setTimeout(() => {
+        i++;
+        if (i >= words.length) {
+          completeLesson("build-" + lvl.id);
+          renderDone("Build Words", "🔡", () => renderBuild(lvl), "You built " + got + " of " + words.length + "!");
+        } else show();
+      }, 850);
     }
     show();
   }
@@ -1014,7 +1385,7 @@
     function answer(saidReal) {
       const card = deck[i];
       if (saidReal === card.real) { got++; cheer("⭐"); }
-      else { cheer("🤔"); speak(card.real ? (card.word + " is a real word") : (card.word + " is not a real word")); }
+      else { chime(false); cheer("🤔", true); speak(card.real ? (card.word + " is a real word") : (card.word + " is not a real word")); }
       i++;
       if (i >= deck.length) {
         completeLesson("real");
@@ -1150,10 +1521,48 @@
           el("button", { class: "btn ghost", onclick: () => { p--; show(); } }, ["← Back"]),
           (p < pages.length)
             ? el("button", { class: "btn green", onclick: () => { p++; show(); } }, ["Next →"])
-            : el("button", { class: "btn green", onclick: finish }, ["The End! 🎉"])
+            : el("button", { class: "btn green", onclick: afterPages }, ["The End! 🎉"])
         ]));
         stage.appendChild(el("div", { class: "progress" }, [p + " / " + pages.length]));
       }
+      app.appendChild(stage);
+    }
+    // After the last page: a quick comprehension check (if the story has one),
+    // which connects decoding to meaning. Low-pressure — she retries till right.
+    function afterPages() {
+      if (story.q) askQuestion();
+      else finish();
+    }
+    function askQuestion() {
+      clear();
+      app.appendChild(topbar(story.title + " 📖", renderStories));
+      const stage = el("div", { class: "stage" });
+      stage.appendChild(buddyNode("think", "ask-buddy"));
+      stage.appendChild(el("div", { class: "prompt" }, ["Story question!"]));
+      stage.appendChild(el("div", { class: "bigcard" }, [
+        el("div", { class: "story-question" }, [story.q.ask])
+      ]));
+      stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(story.q.ask) }, ["👂 Hear it"]));
+
+      const row = el("div", { class: "btn-row story-answers" });
+      let answered = false;
+      story.q.choices.forEach((choice, idx) => {
+        const btn = el("button", { class: "btn blue", onclick: function () {
+          if (answered) return;
+          if (idx === story.q.answer) {
+            answered = true;
+            this.classList.add("right");
+            cheer("⭐");
+            setTimeout(finish, 850);
+          } else {
+            this.classList.add("shake");
+            chime(false);
+            setTimeout(() => this.classList.remove("shake"), 400);
+          }
+        } }, [choice]);
+        row.appendChild(btn);
+      });
+      stage.appendChild(row);
       app.appendChild(stage);
     }
     function finish() {
@@ -1170,6 +1579,7 @@
     app.appendChild(topbar(title, renderMainMenu));
     const stage = el("div", { class: "stage" });
     stage.appendChild(el("div", { class: "done" }, [
+      buddyNode("happy", "done-buddy"),
       el("div", { class: "big" }, [emoji + " 🌟"]),
       el("h2", null, ["Great job!"]),
       subtitle ? el("p", { class: "prompt" }, [subtitle]) : el("span")
@@ -1183,5 +1593,6 @@
 
   /* ---------------- start ---------------- */
   migrateProgress();
+  if (PhonemeAudio.supported) refreshRecordedSounds();   // preload which sounds are recorded
   renderMainMenu();
 })();

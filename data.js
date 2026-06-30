@@ -162,7 +162,8 @@ window.READING_DATA = {
         { text: "The dog runs at Sam. Sam jumps up on a box.", pic: "📦" },
         { text: "The dog can not get up. The dog runs off.", pic: "🐕" },
         { text: "Sam gets his fish back. He munches it up. Yum!", pic: "😋" }
-      ]
+      ],
+      q: { ask: "What did Sam want?", choices: ["A fish", "A hat", "A nap"], answer: 0 }
     },
     {
       id: "big-pig", title: "The Big Pig", cover: "🐷",
@@ -177,7 +178,8 @@ window.READING_DATA = {
         { text: "A duck runs up. \"I can help you, Pip!\"", pic: "🦆" },
         { text: "The duck tugs Pip. They tug and tug.", pic: "🪢" },
         { text: "Pop! Pip is up at last. Pip and the duck grin.", pic: "🎉" }
-      ]
+      ],
+      q: { ask: "Who helped Pip out of the pit?", choices: ["A duck", "A dog", "A cat"], answer: 0 }
     },
     {
       id: "dog-frog", title: "The Dog and the Frog", cover: "🐸",
@@ -192,7 +194,8 @@ window.READING_DATA = {
         { text: "A fish pops up. \"Can I swim?\" said the fish.", pic: "🐟" },
         { text: "Yes! The dog, frog, and fish swim and splash.", pic: "🐠" },
         { text: "The dog is glad. He has pals at last!", pic: "🎉" }
-      ]
+      ],
+      q: { ask: "Why was the dog sad at first?", choices: ["He had no pals", "He was wet", "He was hot"], answer: 0 }
     },
     {
       id: "fun-sun", title: "Fun in the Sun", cover: "☀️",
@@ -207,7 +210,8 @@ window.READING_DATA = {
         { text: "A crab nips Gus! Gus jumps up fast.", pic: "🦀" },
         { text: "Gus runs from the crab. The crab digs in the sand.", pic: "🦀" },
         { text: "Gus naps in his den. What fun Gus had!", pic: "🛖" }
-      ]
+      ],
+      q: { ask: "What did Gus dig up in the sand?", choices: ["A shell", "A bone", "A fish"], answer: 0 }
     },
     {
       id: "red-hen", title: "The Red Hen", cover: "🐔",
@@ -222,7 +226,8 @@ window.READING_DATA = {
         { text: "The hen is mad. \"Get back, fox!\" said the hen.", pic: "😠" },
         { text: "The hen pecks the fox. Peck! Peck! Peck!", pic: "🐔" },
         { text: "The fox runs off fast. The chicks are glad!", pic: "🎉" }
-      ]
+      ],
+      q: { ask: "How many eggs did the red hen have?", choices: ["Ten", "Two", "Six"], answer: 0 }
     }
   ]
 };

@@ -30,13 +30,26 @@ is organized into levels that build on each other.
 
 | Activity | What she does | OG skill |
 |---|---|---|
-| **🔤 Sounds** | See a letter/pattern, say its sound, tap to check (keyword + audio). | Letter–sound correspondence |
-| **🧩 Blend Words** | See a CVC word, tap each letter and say its sound, then blend it; tap to hear the whole word and self-check. | Decoding / blending |
+| **🔤 Sounds** | See a letter/pattern, say its sound, tap to check (real recorded phoneme if available, else keyword + picture). | Letter–sound correspondence |
+| **🧩 Blend Words** | See a CVC word, tap each letter (plays its recorded sound) and say it, then blend; tap to hear the whole word and self-check. | Decoding / blending |
+| **🔡 Build Words** | Hear a word, then **spell** it by tapping letter tiles in order. | Encoding / spelling |
 | **📕 Read Words** | A word appears; she reads it aloud and marks "Got it!" or "Tricky." | Word reading + fluency |
 | **❤️ Heart Words** | Practice irregular high-frequency words (`the`, `said`) separately. | Sight / "red" words |
-| **📚 Stories** | Read short **decodable** picture-book stories, one sentence + picture per page. | Connected-text reading |
+| **📚 Stories** | Read short **decodable** picture-book stories, one sentence + picture per page, then answer a comprehension question. | Connected-text reading + comprehension |
 
-Planned later: real-vs-nonsense word check, decodable sentences, parent progress view.
+A **buddy mascot** (the star) greets her on the home screen and celebrates wins,
+with gentle Web-Audio sound effects on correct/try-again.
+
+### For grown-ups
+
+A **🔒 For Grown-Ups** area (gated behind a quick multiplication question) holds:
+
+- **Progress dashboard** — stars, levels mastered, per-level activity completion, and the current tricky-word list.
+- **🎙️ Record the Sounds** — record each phoneme once with the device mic. Clips
+  are stored in IndexedDB **on this device only** (nothing leaves the iPad) and
+  power the real-sound playback in Sounds & Blend Words. Until a sound is
+  recorded, those activities fall back to the keyword/picture cue.
+- **♻️ Reset progress.**
 
 ---
 
@@ -155,8 +168,11 @@ minute or two. When you change app code, also bump `CACHE_VERSION` in `sw.js`
 - [x] Star jar on the home page (collect a star for everything you read)
 - [x] Milestone statues + 🏛️ Collection gallery (Cat @3, Unicorn @10, Mermaid @20)
 - [x] Tricky-word review list (mark "Tricky" in Read Words → practice in Review Tricky Words)
-- [ ] Recorded human audio for phonemes
-- [ ] Parent progress view
+- [x] Build-a-Word spelling/encoding activity
+- [x] Buddy mascot + sound effects
+- [x] Story comprehension questions
+- [x] Recorded human audio for phonemes (on-device recorder in the Grown-Ups area)
+- [x] Parent progress view
 - [ ] Read-aloud / pronunciation check (paused — needs iPad test)
 
 ## Privacy

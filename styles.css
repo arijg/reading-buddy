@@ -543,7 +543,175 @@ html, body {
 .done { text-align: center; }
 .done .big { font-size: 4rem; }
 
+/* ---------- Buddy mascot ---------- */
+.buddy svg { width: 100%; height: auto; display: block; }
+.home-hello {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-content: center;
+  margin: 6px 0 18px;
+}
+.buddy.hello { width: 72px; flex-shrink: 0; animation: buddy-wave 2.4s ease-in-out infinite; transform-origin: 50% 90%; }
+@keyframes buddy-wave {
+  0%, 88%, 100% { transform: rotate(0deg); }
+  92% { transform: rotate(-9deg); }
+  96% { transform: rotate(9deg); }
+}
+.home-hello .home-title { text-align: left; margin: 0; }
+.home-hello .home-sub { text-align: left; margin: 2px 0 0; }
+.buddy.done-buddy { width: 96px; margin: 0 auto 4px; animation: popin .4s ease-out; }
+.buddy.ask-buddy { width: 70px; margin: 0 auto; }
+
+/* Cheer overlay now carries the buddy */
+.cheer { flex-direction: column; gap: 0; }
+.cheer-buddy { width: 130px; animation: pop .9s ease-out forwards; }
+.cheer-emoji { font-size: 3.4rem; margin-top: -10px; animation: pop .9s ease-out forwards; }
+
+/* ---------- Grown-ups button ---------- */
+.grownup-btn {
+  margin: 26px auto 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  opacity: .45;
+  font: inherit;
+  font-size: 1rem;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.grownup-btn:active { opacity: .8; }
+
+/* ---------- Build a Word ---------- */
+.build-card { padding: 28px 30px; }
+.build-slots {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.build-slot {
+  width: 60px; height: 76px;
+  border-bottom: 6px solid #cdd8f2;
+  display: grid;
+  place-items: center;
+  font-size: 3.4rem;
+  color: var(--ink);
+}
+.build-slot.filled { border-bottom-color: var(--green); }
+.tile-tray {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.tile {
+  border: none;
+  font: inherit;
+  font-size: 2.6rem;
+  width: 70px; height: 70px;
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.tile.vowel { color: var(--pink); }
+.tile:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.tile.used { visibility: hidden; }
+.shake { animation: shake .4s; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-7px); }
+  40%, 80% { transform: translateX(7px); }
+}
+
+/* ---------- Story comprehension question ---------- */
+.story-question { font-size: 1.9rem; line-height: 1.35; max-width: 11em; }
+.story-answers { flex-direction: column; align-items: stretch; }
+.story-answers .btn { width: 100%; }
+.btn.right { background: var(--green); }
+
+/* ---------- Parent area ---------- */
+.parent-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.pstat {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 8px;
+  text-align: center;
+}
+.pstat b { display: block; font-size: 1.9rem; color: var(--primary-d); }
+.pstat span { font-size: .9rem; opacity: .7; }
+
+.parent-table {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+.ptr {
+  display: grid;
+  grid-template-columns: 2.4fr repeat(5, 1fr);
+  align-items: center;
+  gap: 4px;
+  padding: 9px 6px;
+  border-bottom: 1px solid #f0ece2;
+  font-size: 1.15rem;
+  text-align: center;
+}
+.ptr:last-child { border-bottom: none; }
+.ptr.phead { font-size: 1.1rem; opacity: .65; }
+.ptr .pname { text-align: left; font-size: 1rem; }
+
+.tricky-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.tchip {
+  background: var(--card);
+  border: 2px solid #ffd45e;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Record sounds ---------- */
+.sound-list { display: grid; gap: 10px; }
+.sound-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 16px;
+}
+.sound-row.has { border: 2px solid var(--green); }
+.sound-g { font-size: 1.8rem; font-weight: bold; width: 2em; }
+.sound-kw { flex: 1; opacity: .75; }
+.rec-btn {
+  border: none;
+  font: inherit;
+  font-size: 1.05rem;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--pink);
+  color: #fff;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.rec-btn.recording { background: #e23b5a; animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .55; } }
+.hear-btn.small { font-size: 1.1rem; padding: 10px 14px; }
+
 @media (max-width: 600px) {
   .bigword { font-size: 4rem; }
   .menu-card { font-size: 1.2rem; }
+  .tile { width: 60px; height: 60px; font-size: 2.2rem; }
+  .build-slot { width: 50px; height: 64px; font-size: 2.8rem; }
 }
