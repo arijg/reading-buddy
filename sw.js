@@ -10,7 +10,7 @@
  * Bump CACHE_VERSION whenever you want to guarantee a clean refresh.
  */
 
-const CACHE_VERSION = "learning-buddy-v5";
+const CACHE_VERSION = "learning-buddy-v6";
 
 // Relative paths so it works whether hosted at the domain root or in a /subfolder.
 const ASSETS = [

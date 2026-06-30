@@ -40,11 +40,26 @@ is organized into levels that build on each other.
 A **buddy mascot** (the star) greets her on the home screen and celebrates wins,
 with gentle Web-Audio sound effects on correct/try-again.
 
+### Math activities
+
+Singapore-style, K–1, with a 1–5 difficulty dial. Every question has a **👂 Hear it**
+button so the words never block the math.
+
+| Activity | What she does | Skill |
+|---|---|---|
+| **🔢 Counting** | Count a group of objects. | Counting |
+| **🔟 Show the Number** | See a numeral, **tap a ten-frame** to build that many, check. | Subitizing / "ten and some more" |
+| **🔗 Number Bonds** | Find the missing part (part–part–whole). | Number bonds |
+| **➕ Adding / ➖ Subtracting** | Two groups / take-away with pictures + number sentence. | Add & subtract within 10–30 |
+| **⚖️ Which Is More?** | Compare two groups. | Comparing quantities |
+| **➡️ What Comes Next?** | Number sequences + skip-counting. | Sequences |
+| **📖 Story Problems** | A short word problem read aloud; tap the answer. | Applying math to a situation |
+
 ### For grown-ups
 
 A **🔒 For Grown-Ups** area (gated behind a quick multiplication question) holds:
 
-- **Progress dashboard** — stars, levels mastered, per-level activity completion, and the current tricky-word list.
+- **Progress dashboard** — stars, levels mastered, per-level **reading** activity completion, **math** progress per difficulty, and the current tricky-word list.
 - **🎙️ Record the Sounds** — record each phoneme once with the device mic. Clips
   are stored in IndexedDB **on this device only** (nothing leaves the iPad) and
   power the real-sound playback in Sounds & Blend Words. Until a sound is
