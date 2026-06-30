@@ -1,5 +1,5 @@
 /*
- * Reading Buddy service worker — makes the app work offline.
+ * Learning Buddy service worker — makes the app work offline.
  *
  * Strategy: "network first, fall back to cache."
  *   - Online  → always fetch the latest files (so updates show immediately),
@@ -10,7 +10,7 @@
  * Bump CACHE_VERSION whenever you want to guarantee a clean refresh.
  */
 
-const CACHE_VERSION = "reading-buddy-v3";
+const CACHE_VERSION = "learning-buddy-v4";
 
 // Relative paths so it works whether hosted at the domain root or in a /subfolder.
 const ASSETS = [
@@ -18,6 +18,7 @@ const ASSETS = [
   "./index.html",
   "./styles.css",
   "./data.js",
+  "./math-data.js",
   "./app.js",
   "./manifest.json",
   "./apple-touch-icon.png",

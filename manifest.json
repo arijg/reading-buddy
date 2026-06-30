@@ -1,7 +1,7 @@
 {
-  "name": "Reading Buddy",
-  "short_name": "Reading Buddy",
-  "description": "Fun phonics reading practice for early readers.",
+  "name": "Learning Buddy",
+  "short_name": "Learning Buddy",
+  "description": "Fun phonics reading and Singapore-style math practice for early learners.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

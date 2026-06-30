@@ -1,7 +1,8 @@
-# Reading Buddy 📖
+# Learning Buddy 🌟
 
-A simple, kid-friendly web app to help an early reader (kindergarten → first grade)
-practice reading using the **Orton-Gillingham** structured-literacy approach.
+A simple, kid-friendly web app to help an early learner (kindergarten → first grade)
+practice **reading** (using the **Orton-Gillingham** structured-literacy approach) and
+**math** (Singapore-style: counting, number bonds, add/subtract, compare, sequences).
 Built to run in Safari on an iPad and be hosted for free on GitHub Pages.
 
 > Made by a dad and Claude, for one specific awesome kid.

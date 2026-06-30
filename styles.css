@@ -129,6 +129,13 @@ html, body {
 .tricky-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
 
 /* Collection gallery */
+.collection-section { margin-bottom: 22px; }
+.collection-heading {
+  font-size: 1.25rem;
+  margin: 6px 0 12px;
+  color: var(--ink);
+  opacity: .85;
+}
 .collection-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
