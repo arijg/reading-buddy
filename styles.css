@@ -163,6 +163,13 @@ html, body {
 .keyword-line { font-size: 1.8rem; }
 .keyword-line .emoji { font-size: 2.4rem; vertical-align: middle; }
 
+/* Decodable sentence (smaller than a single big word) */
+.sentence {
+  font-size: 2.4rem;
+  line-height: 1.4;
+  max-width: 9em;
+}
+
 /* Buttons */
 .btn-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
 .btn {

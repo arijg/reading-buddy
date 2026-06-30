@@ -1,3 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Reading Buddy</title>
+  <style>
+/* Reading Buddy — big, calm, kid-friendly styling */
+
+:root {
+  --bg:        #fef6e4;   /* warm cream */
+  --card:      #ffffff;
+  --ink:       #2d3142;   /* soft near-black */
+  --primary:   #5b8def;   /* friendly blue */
+  --primary-d: #3f6fd1;
+  --green:     #57cc99;
+  --green-d:   #38a3a5;
+  --yellow:    #ffc94b;
+  --pink:      #ff8fab;
+  --purple:    #9b8cff;
+  --shadow:    0 6px 0 rgba(0,0,0,0.12);
+  --radius:    24px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", system-ui, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
+#app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Top bar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.topbar h1 { font-size: 1.6rem; margin: 0; flex: 1; text-align: center; }
+.back-btn {
+  border: none;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.2rem;
+  padding: 10px 18px;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.back-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.spacer { width: 64px; }
+
+/* ---------- Home menu ---------- */
+.home-title {
+  text-align: center;
+  font-size: 2.4rem;
+  margin: 10px 0 4px;
+}
+.home-sub { text-align: center; font-size: 1.1rem; opacity: .7; margin-bottom: 24px; }
+
+.menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.menu-card {
+  background: var(--card);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px 16px;
+  font: inherit;
+  font-size: 1.4rem;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: transform .05s;
+}
+.menu-card .emoji { font-size: 3rem; }
+.menu-card:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+
+/* ---------- Level picker ---------- */
+.level-list { display: grid; gap: 14px; }
+.level-card {
+  background: var(--card);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px 22px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.level-card:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.level-num {
+  background: var(--purple);
+  color: #fff;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.level-card .meta { flex: 1; }
+.level-card .meta b { font-size: 1.3rem; }
+.level-card .meta span { display: block; opacity: .65; font-size: 1rem; }
+.level-card .star { font-size: 1.6rem; }
+
+/* ---------- Activity stage (shared) ---------- */
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  text-align: center;
+}
+.prompt { font-size: 1.2rem; opacity: .7; }
+
+/* The big word/letter card */
+.bigcard {
+  background: var(--card);
+  border-radius: 32px;
+  box-shadow: var(--shadow);
+  padding: 40px 50px;
+  min-width: 260px;
+}
+.bigword {
+  font-size: 5.5rem;
+  letter-spacing: 4px;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.bigword .ltr {
+  padding: 4px 10px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform .08s, background .15s;
+}
+.bigword .ltr.lit { background: var(--yellow); transform: translateY(-8px) scale(1.1); }
+/* vowels get a subtle color cue */
+.bigword .ltr.vowel { color: var(--pink); }
+
+.keyword-line { font-size: 1.8rem; }
+.keyword-line .emoji { font-size: 2.4rem; vertical-align: middle; }
+
+/* Decodable sentence (smaller than a single big word) */
+.sentence {
+  font-size: 2.4rem;
+  line-height: 1.4;
+  max-width: 9em;
+}
+
+/* Buttons */
+.btn-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.btn {
+  border: none;
+  font: inherit;
+  font-size: 1.3rem;
+  padding: 16px 26px;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  color: #fff;
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.btn.blue   { background: var(--primary); }
+.btn.green  { background: var(--green-d); }
+.btn.pink   { background: var(--pink); }
+.btn.yellow { background: var(--yellow); color: var(--ink); }
+.btn.ghost  { background: var(--card); color: var(--ink); }
+
+.hear-btn {
+  background: var(--card);
+  color: var(--ink);
+  border: none;
+  font: inherit;
+  font-size: 1.2rem;
+  padding: 14px 22px;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.hear-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+
+/* Progress dots */
+.progress {
+  font-size: 1.1rem;
+  opacity: .7;
+}
+
+/* Celebration */
+.cheer {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 6rem;
+  pointer-events: none;
+  animation: pop .8s ease-out forwards;
+}
+@keyframes pop {
+  0%   { transform: scale(.3); opacity: 0; }
+  40%  { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1);   opacity: 0; }
+}
+
+/* Done screen */
+.done { text-align: center; }
+.done .big { font-size: 4rem; }
+
+@media (max-width: 600px) {
+  .bigword { font-size: 4rem; }
+  .menu-card { font-size: 1.2rem; }
+}
+
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+/*
+ * Reading Buddy — all the content lives here.
+ * Edit this file to tune things to exactly where your reader is.
+ *
+ * Each LETTER SOUND has:
+ *   g       the grapheme she sees (e.g. "a", "sh")
+ *   keyword a word that starts with the sound (for the picture/audio cue)
+ *   emoji   a friendly picture for the keyword
+ *
+ * Each LEVEL has:
+ *   id, name, focus   what it's about
+ *   newSounds         graphemes introduced at this level
+ *   words             real CVC/decodable words to read & blend
+ *   nonsense          decodable NON-words (classic OG check that she's
+ *                     sounding out, not memorizing) — used in "Real or Not?"
+ *   sentences         short decodable sentences using sounds taught so far
+ */
+
+window.READING_DATA = {
+
+  // ---- Master letter-sound deck (used by the "Sounds" activity) ----
+  letterSounds: [
+    { g: "s", keyword: "sun",      emoji: "☀️" },
+    { g: "a", keyword: "apple",    emoji: "🍎" },
+    { g: "t", keyword: "top",      emoji: "🔝" },
+    { g: "p", keyword: "pig",      emoji: "🐷" },
+    { g: "i", keyword: "igloo",    emoji: "🏠" },
+    { g: "n", keyword: "net",      emoji: "🥅" },
+    { g: "m", keyword: "moon",     emoji: "🌙" },
+    { g: "d", keyword: "dog",      emoji: "🐶" },
+    { g: "o", keyword: "octopus",  emoji: "🐙" },
+    { g: "c", keyword: "cat",      emoji: "🐱" },
+    { g: "k", keyword: "kite",     emoji: "🪁" },
+    { g: "g", keyword: "goat",     emoji: "🐐" },
+    { g: "u", keyword: "umbrella", emoji: "☂️" },
+    { g: "r", keyword: "rabbit",   emoji: "🐰" },
+    { g: "h", keyword: "hat",      emoji: "🎩" },
+    { g: "b", keyword: "bus",      emoji: "🚌" },
+    { g: "f", keyword: "fish",     emoji: "🐟" },
+    { g: "l", keyword: "leaf",     emoji: "🍃" },
+    { g: "e", keyword: "egg",      emoji: "🥚" },
+    { g: "j", keyword: "jam",      emoji: "🍓" },
+    { g: "w", keyword: "web",      emoji: "🕸️" },
+    { g: "v", keyword: "van",      emoji: "🚐" },
+    { g: "x", keyword: "fox",      emoji: "🦊" },
+    { g: "y", keyword: "yo-yo",    emoji: "🪀" },
+    { g: "z", keyword: "zip",      emoji: "🤐" },
+    { g: "sh", keyword: "ship",    emoji: "🚢" },
+    { g: "ch", keyword: "chip",    emoji: "🍟" },
+    { g: "th", keyword: "thumb",   emoji: "👍" }
+  ],
+
+  // ---- Levels (short-vowel → digraphs → blends; cumulative) ----
+  levels: [
+    {
+      id: 1,
+      name: "Short a",
+      focus: "Words with the /a/ sound",
+      newSounds: ["s", "a", "t", "p", "n", "m", "d"],
+      words: ["at", "am", "sat", "pat", "tap", "nap", "map", "mad",
+              "dad", "sad", "tan", "pan", "man", "mat", "sap", "pad", "nab", "tam"],
+      nonsense: ["nad", "pab", "mab", "sab", "dat", "nan", "tas", "dap"],
+      sentences: ["A man sat.", "Pat the cat.", "Dad ran.", "A sad, sad nap.", "Sam sat at a mat."]
+    },
+    {
+      id: 2,
+      name: "Short i",
+      focus: "Words with the /i/ sound",
+      newSounds: ["i"],
+      words: ["it", "in", "sit", "sip", "tip", "pit", "pin", "tin",
+              "nip", "dip", "dim", "did", "mid", "rim", "rip", "tic"],
+      nonsense: ["pim", "tib", "dit", "mip", "sib", "nid", "dap", "nim"],
+      sentences: ["Sit in it.", "Dip the tip.", "A pin is in.", "Tim did a flip.", "Pat did sip a bit."]
+    },
+    {
+      id: 3,
+      name: "Short o",
+      focus: "Words with the /o/ sound",
+      newSounds: ["o", "c", "g"],
+      words: ["on", "cot", "cop", "top", "pop", "pot", "dot", "dog",
+              "got", "mop", "mom", "nod", "cod", "tot", "sod", "tog"],
+      nonsense: ["pog", "tob", "dod", "nop", "gop", "mog", "cob", "sot"],
+      sentences: ["The dog sat.", "Mom got a pot.", "A cat is on top.", "Dad got a big mop.", "The dog can not nod."]
+    },
+    {
+      id: 4,
+      name: "Short u",
+      focus: "Words with the /u/ sound",
+      newSounds: ["u", "b"],
+      words: ["up", "us", "cut", "cup", "pup", "sub", "tub", "bud",
+              "mud", "mug", "nut", "sun", "bun", "but", "gum", "bug"],
+      nonsense: ["dut", "pud", "mub", "gub", "nug", "tup", "bup", "sut"],
+      sentences: ["A pup is in mud.", "The sun is up.", "Cut the bun.", "The bug is in a cup.", "Gus had a big mug."]
+    },
+    {
+      id: 5,
+      name: "Short e",
+      focus: "Words with the /e/ sound",
+      newSounds: ["e", "r", "h", "f", "l"],
+      words: ["bed", "red", "led", "fed", "pen", "ten", "hen", "men",
+              "net", "pet", "get", "leg", "egg", "let", "set", "wet"],
+      nonsense: ["bem", "tef", "heb", "nep", "fel", "ped", "lem", "ret"],
+      sentences: ["The hen is red.", "Get the pet.", "Ten men ran.", "The red hen sat on a bed.", "Let the wet dog get in."]
+    },
+    {
+      id: 6,
+      name: "Digraphs sh, ch, th",
+      focus: "Two letters, one sound",
+      newSounds: ["sh", "ch", "th"],
+      words: ["ship", "shop", "fish", "dish", "cash", "chip", "chop",
+              "chin", "rich", "much", "this", "that", "then", "bath", "with", "thin"],
+      nonsense: ["chid", "shet", "thip", "chab", "shom", "thut", "shig", "chun"],
+      sentences: ["The fish is in the dish.", "Chop with this.", "That ship is big.",
+                  "I wish for a chip.", "The thin cat is in the bath."]
+    },
+    {
+      id: 7,
+      name: "Starting blends",
+      focus: "Two sounds at the start (st, pl, gr…)",
+      newSounds: [],
+      words: ["stop", "spot", "step", "plan", "plot", "clap", "clip", "flag",
+              "flop", "grab", "grin", "trip", "trap", "drum", "drop", "frog", "spin", "slip"],
+      nonsense: ["frop", "glet", "plit", "stom", "crad", "snib", "blet", "drix"],
+      sentences: ["Stop at the step.", "The frog is on a flag.", "I can spin and grin.",
+                  "Grab the drum and clap.", "The plan is to flip and flop."]
+    },
+    {
+      id: 8,
+      name: "Ending blends",
+      focus: "Two sounds at the end (-nd, -mp, -st, -nk)",
+      newSounds: [],
+      words: ["hand", "land", "sand", "bend", "jump", "lamp", "camp", "fast",
+              "last", "nest", "best", "bank", "sink", "pink", "junk", "wind", "tent", "milk"],
+      nonsense: ["pand", "jund", "wint", "lemp", "gonk", "tisk", "fust", "rint"],
+      sentences: ["The lamp is on the desk.", "I can jump in the sand.",
+                  "Run fast to the tent.", "A pink sock is in the bank.", "The best nest is on land."]
+    }
+  ],
+
+  // ---- Heart / red words (irregular high-frequency words) ----
+  // The "heart" marks the tricky part you learn "by heart".
+  heartWords: [
+    "the", "a", "is", "to", "was", "of", "said", "you",
+    "are", "he", "she", "we", "me", "be", "my", "I",
+    "they", "have", "do", "go", "no", "so", "for", "here",
+    "what", "want", "come", "some", "from", "were", "there", "where"
+  ]
+};
+
+  </script>
+  <script>
 /*
  * Reading Buddy — app logic.
  * Plain vanilla JS. No build step, no dependencies.
@@ -390,3 +788,7 @@
   /* ---------------- start ---------------- */
   renderHome();
 })();
+
+  </script>
+</body>
+</html>

@@ -6,7 +6,7 @@
  * change the app, bump CACHE_VERSION so phones fetch the new files.
  */
 
-const CACHE_VERSION = "reading-buddy-v1";
+const CACHE_VERSION = "reading-buddy-v2";
 
 // Relative paths so it works whether hosted at the domain root or in a /subfolder.
 const ASSETS = [

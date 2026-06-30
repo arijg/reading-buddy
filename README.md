@@ -67,10 +67,26 @@ upgrade once we record or source phoneme clips.
 ```
 index.html      # app shell + screens
 styles.css      # big, calm, kid-friendly styling
-data.js         # ALL content: sounds, levels, word lists, heart words
+data.js         # ALL content: sounds, levels, word lists, nonsense words, sentences
 app.js          # screen routing + the activities + progress saving
+sw.js           # service worker (offline). Bump CACHE_VERSION when app code changes.
+manifest.json   # PWA manifest (installable)
+icon*.png       # home-screen icons (generated from icon.svg via `sips`)
+build-artifact.py          # inlines the split app into one self-contained HTML
+reading-buddy-artifact.html # the built single-file app (paste into the Claude app)
 README.md       # this file
 ```
+
+### Running it inside the Claude app (Artifact)
+
+`reading-buddy-artifact.html` is a single self-contained file (no separate
+assets, no service worker). Open it in the Claude app and it renders as an
+interactive Artifact you can tap and play. Regenerate it after content/code
+changes with `python3 build-artifact.py` (split files stay the source of truth).
+
+Caveats vs the installed PWA: Artifacts run sandboxed — saved stars (localStorage)
+may not persist between sessions, and read-aloud audio may not work; the PWA is
+better for her actual daily practice, the Artifact is handy for quick demos/tweaks.
 
 ## Content / scope & sequence
 
@@ -94,14 +110,20 @@ openly-licensed / free references for ordering and coverage:
 
 ## Running it
 
+**Live app:** https://arijg.github.io/reading-buddy/
+
 **On a computer (to test):** open `index.html` in a browser. (Content is loaded
 from `data.js`, not fetched, so it works straight from the file system.)
 
 **On the iPad:**
-1. Push this folder to a GitHub repo and enable **GitHub Pages** (Settings →
-   Pages → deploy from `main`/root).
-2. Open the Pages URL in Safari on the iPad.
-3. Share → **Add to Home Screen** for a full-screen app icon.
+1. Open **https://arijg.github.io/reading-buddy/** in Safari.
+2. Tap the **Share** button → **Add to Home Screen** → *Add*.
+3. Launch it from the home-screen icon — full screen, works offline.
+
+**Updating the live app:** edit files, then
+`git add -A && git commit -m "..." && git push`. GitHub Pages redeploys in a
+minute or two. When you change app code, also bump `CACHE_VERSION` in `sw.js`
+(e.g. `v1` → `v2`) so installed iPads load the new version instead of the cache.
 
 ---
 
@@ -114,9 +136,10 @@ from `data.js`, not fetched, so it works straight from the file system.)
 - [x] Read Words (self-check + progress)
 - [x] Heart Words
 - [x] Home-screen icon + offline support (installable PWA)
+- [x] Decodable sentences (📖 Sentences activity)
+- [x] Real-vs-nonsense word check (🕵️ Real or Not? activity)
+- [x] Single-file Artifact build (runs inside the Claude app)
 - [ ] Recorded human audio for phonemes
-- [ ] Real-vs-nonsense word check
-- [ ] Decodable sentences
 - [ ] Parent progress view
 
 ## Privacy

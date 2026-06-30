@@ -10,8 +10,10 @@
  * Each LEVEL has:
  *   id, name, focus   what it's about
  *   newSounds         graphemes introduced at this level
- *   words             CVC words to read/blend (only sounds taught so far)
- *   sentences         short decodable sentences (optional, used later)
+ *   words             real CVC/decodable words to read & blend
+ *   nonsense          decodable NON-words (classic OG check that she's
+ *                     sounding out, not memorizing) — used in "Real or Not?"
+ *   sentences         short decodable sentences using sounds taught so far
  */
 
 window.READING_DATA = {
@@ -48,7 +50,7 @@ window.READING_DATA = {
     { g: "th", keyword: "thumb",   emoji: "👍" }
   ],
 
-  // ---- Levels (short-vowel scope & sequence; cumulative) ----
+  // ---- Levels (short-vowel → digraphs → blends; cumulative) ----
   levels: [
     {
       id: 1,
@@ -57,7 +59,8 @@ window.READING_DATA = {
       newSounds: ["s", "a", "t", "p", "n", "m", "d"],
       words: ["at", "am", "sat", "pat", "tap", "nap", "map", "mad",
               "dad", "sad", "tan", "pan", "man", "mat", "sap", "pad", "nab", "tam"],
-      sentences: ["A man sat.", "Pat the cat.", "Dad ran."]
+      nonsense: ["nad", "pab", "mab", "sab", "dat", "nan", "tas", "dap"],
+      sentences: ["A man sat.", "Pat the cat.", "Dad ran.", "A sad, sad nap.", "Sam sat at a mat."]
     },
     {
       id: 2,
@@ -66,7 +69,8 @@ window.READING_DATA = {
       newSounds: ["i"],
       words: ["it", "in", "sit", "sip", "tip", "pit", "pin", "tin",
               "nip", "dip", "dim", "did", "mid", "rim", "rip", "tic"],
-      sentences: ["Sit in it.", "Dip the tip.", "A pin is in."]
+      nonsense: ["pim", "tib", "dit", "mip", "sib", "nid", "dap", "nim"],
+      sentences: ["Sit in it.", "Dip the tip.", "A pin is in.", "Tim did a flip.", "Pat did sip a bit."]
     },
     {
       id: 3,
@@ -75,7 +79,8 @@ window.READING_DATA = {
       newSounds: ["o", "c", "g"],
       words: ["on", "cot", "cop", "top", "pop", "pot", "dot", "dog",
               "got", "mop", "mom", "nod", "cod", "tot", "sod", "tog"],
-      sentences: ["The dog sat.", "Mom got a pot.", "A cat is on top."]
+      nonsense: ["pog", "tob", "dod", "nop", "gop", "mog", "cob", "sot"],
+      sentences: ["The dog sat.", "Mom got a pot.", "A cat is on top.", "Dad got a big mop.", "The dog can not nod."]
     },
     {
       id: 4,
@@ -84,7 +89,8 @@ window.READING_DATA = {
       newSounds: ["u", "b"],
       words: ["up", "us", "cut", "cup", "pup", "sub", "tub", "bud",
               "mud", "mug", "nut", "sun", "bun", "but", "gum", "bug"],
-      sentences: ["A pup is in mud.", "The sun is up.", "Cut the bun."]
+      nonsense: ["dut", "pud", "mub", "gub", "nug", "tup", "bup", "sut"],
+      sentences: ["A pup is in mud.", "The sun is up.", "Cut the bun.", "The bug is in a cup.", "Gus had a big mug."]
     },
     {
       id: 5,
@@ -93,7 +99,8 @@ window.READING_DATA = {
       newSounds: ["e", "r", "h", "f", "l"],
       words: ["bed", "red", "led", "fed", "pen", "ten", "hen", "men",
               "net", "pet", "get", "leg", "egg", "let", "set", "wet"],
-      sentences: ["The hen is red.", "Get the pet.", "Ten men ran."]
+      nonsense: ["bem", "tef", "heb", "nep", "fel", "ped", "lem", "ret"],
+      sentences: ["The hen is red.", "Get the pet.", "Ten men ran.", "The red hen sat on a bed.", "Let the wet dog get in."]
     },
     {
       id: 6,
@@ -102,7 +109,31 @@ window.READING_DATA = {
       newSounds: ["sh", "ch", "th"],
       words: ["ship", "shop", "fish", "dish", "cash", "chip", "chop",
               "chin", "rich", "much", "this", "that", "then", "bath", "with", "thin"],
-      sentences: ["The fish is in the dish.", "Chop with this.", "That ship is big."]
+      nonsense: ["chid", "shet", "thip", "chab", "shom", "thut", "shig", "chun"],
+      sentences: ["The fish is in the dish.", "Chop with this.", "That ship is big.",
+                  "I wish for a chip.", "The thin cat is in the bath."]
+    },
+    {
+      id: 7,
+      name: "Starting blends",
+      focus: "Two sounds at the start (st, pl, gr…)",
+      newSounds: [],
+      words: ["stop", "spot", "step", "plan", "plot", "clap", "clip", "flag",
+              "flop", "grab", "grin", "trip", "trap", "drum", "drop", "frog", "spin", "slip"],
+      nonsense: ["frop", "glet", "plit", "stom", "crad", "snib", "blet", "drix"],
+      sentences: ["Stop at the step.", "The frog is on a flag.", "I can spin and grin.",
+                  "Grab the drum and clap.", "The plan is to flip and flop."]
+    },
+    {
+      id: 8,
+      name: "Ending blends",
+      focus: "Two sounds at the end (-nd, -mp, -st, -nk)",
+      newSounds: [],
+      words: ["hand", "land", "sand", "bend", "jump", "lamp", "camp", "fast",
+              "last", "nest", "best", "bank", "sink", "pink", "junk", "wind", "tent", "milk"],
+      nonsense: ["pand", "jund", "wint", "lemp", "gonk", "tisk", "fust", "rint"],
+      sentences: ["The lamp is on the desk.", "I can jump in the sand.",
+                  "Run fast to the tent.", "A pink sock is in the bank.", "The best nest is on land."]
     }
   ],
 
@@ -111,6 +142,7 @@ window.READING_DATA = {
   heartWords: [
     "the", "a", "is", "to", "was", "of", "said", "you",
     "are", "he", "she", "we", "me", "be", "my", "I",
-    "they", "have", "do", "go", "no", "so", "for", "here"
+    "they", "have", "do", "go", "no", "so", "for", "here",
+    "what", "want", "come", "some", "from", "were", "there", "where"
   ]
 };
