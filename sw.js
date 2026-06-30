@@ -1,12 +1,16 @@
 /*
  * Reading Buddy service worker — makes the app work offline.
  *
- * Strategy: "cache first." On install we cache every file. After that the app
- * loads straight from the cache (instant, works with no internet). When you
- * change the app, bump CACHE_VERSION so phones fetch the new files.
+ * Strategy: "network first, fall back to cache."
+ *   - Online  → always fetch the latest files (so updates show immediately),
+ *               and refresh the saved copy in the background.
+ *   - Offline → serve the last saved copy so the app still works.
+ *
+ * This avoids the "stale cached version" trap of a cache-first worker.
+ * Bump CACHE_VERSION whenever you want to guarantee a clean refresh.
  */
 
-const CACHE_VERSION = "reading-buddy-v2";
+const CACHE_VERSION = "reading-buddy-v3";
 
 // Relative paths so it works whether hosted at the domain root or in a /subfolder.
 const ASSETS = [
@@ -21,7 +25,7 @@ const ASSETS = [
   "./icon-512.png"
 ];
 
-// Install: pre-cache everything.
+// Install: pre-cache everything, and take over right away.
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION).then((cache) => cache.addAll(ASSETS))
@@ -29,29 +33,28 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// Activate: clean up old caches from previous versions.
+// Activate: delete old caches, then control existing pages immediately.
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
-    )
+    caches.keys()
+      .then((keys) =>
+        Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
+      )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch: serve from cache, fall back to network (and cache new GETs).
+// Fetch: try the network first; if that fails (offline), use the cached copy.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((resp) => {
-          const copy = resp.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, copy));
-          return resp;
-        })
-        .catch(() => cached); // offline and not cached — nothing we can do
-    })
+    fetch(event.request)
+      .then((resp) => {
+        // Refresh the cached copy with the fresh one.
+        const copy = resp.clone();
+        caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, copy));
+        return resp;
+      })
+      .catch(() => caches.match(event.request)) // offline — serve last saved copy
   );
 });
