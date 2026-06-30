@@ -73,6 +73,19 @@
   }
   function unlockedStatueCount() { const n = getStarCount(); return STATUES.filter(s => n >= s.stars).length; }
 
+  // Tricky-word review list — words she marked "Tricky" go here to practice later.
+  function addTricky(word) {
+    const p = loadProgress();
+    p.tricky = p.tricky || {};
+    p.tricky[word] = true;
+    saveProgress(p);
+  }
+  function removeTricky(word) {
+    const p = loadProgress();
+    if (p.tricky && p.tricky[word]) { delete p.tricky[word]; saveProgress(p); }
+  }
+  function getTrickyWords() { return Object.keys(loadProgress().tricky || {}); }
+
   /* ---------------- Small helpers ---------------- */
   function el(tag, props, kids) {
     const n = document.createElement(tag);
@@ -327,6 +340,12 @@
     app.appendChild(el("button", { class: "collection-btn", onclick: renderCollection }, [
       "🏛️ My Collection  (" + unlockedStatueCount() + " / " + STATUES.length + ")"
     ]));
+    const trickyN = getTrickyWords().length;
+    if (trickyN > 0) {
+      app.appendChild(el("button", { class: "tricky-btn", onclick: renderTricky }, [
+        "🤔 Review Tricky Words  (" + trickyN + ")"
+      ]));
+    }
 
     const items = [
       { emoji: "🔤", label: "Sounds",      go: renderSounds },
@@ -500,7 +519,9 @@
       app.appendChild(stage);
     }
     function next(success) {
-      if (success) { got++; cheer("⭐"); }
+      const word = words[i];
+      if (success) { got++; removeTricky(word); cheer("⭐"); }  // got it now → clear from review
+      else { addTricky(word); }                                 // tricky → save to review list
       i++;
       if (i >= words.length) {
         completeLesson("read-" + lvl.id);
@@ -578,6 +599,53 @@
       if (i >= deck.length) {
         completeLesson("real");
         renderDone("Real or Not?", "🕵️", renderRealOrNot, "You got " + got + " of " + deck.length + "!");
+      } else show();
+    }
+    show();
+  }
+
+  /* ---------------- ACTIVITY: TRICKY WORDS (review) ---------------- */
+  function renderTricky() {
+    const words = getTrickyWords();   // snapshot of the current review list
+    if (words.length === 0) {
+      clear();
+      app.appendChild(topbar("Tricky Words 🤔", renderHome));
+      const stage = el("div", { class: "stage" });
+      stage.appendChild(el("div", { class: "done" }, [
+        el("div", { class: "big" }, ["🎉"]),
+        el("h2", null, ["No tricky words!"]),
+        el("p", { class: "prompt" }, ["When a word is hard in Read Words, tap \"Tricky\" and it will show up here to practice."])
+      ]));
+      stage.appendChild(el("button", { class: "btn ghost", onclick: renderHome }, ["🏠 Home"]));
+      app.appendChild(stage);
+      return;
+    }
+
+    const deck = shuffle(words);
+    let i = 0, fixed = 0;
+
+    function show() {
+      clear();
+      app.appendChild(topbar("Tricky Words 🤔", renderHome));
+      const word = deck[i];
+      const stage = el("div", { class: "stage" });
+
+      stage.appendChild(el("div", { class: "prompt" }, ["Practice this tricky word. Read it out loud!"]));
+      stage.appendChild(el("div", { class: "bigcard" }, [ wordLetters(word) ]));
+      stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(word) }, ["👂 Check it"]));
+      stage.appendChild(el("div", { class: "btn-row" }, [
+        el("button", { class: "btn green", onclick: () => next(true) }, ["Got it now! 😄"]),
+        el("button", { class: "btn yellow", onclick: () => next(false) }, ["Still tricky 🤔"])
+      ]));
+      stage.appendChild(el("div", { class: "progress" }, [(i + 1) + " / " + deck.length]));
+      app.appendChild(stage);
+    }
+    function next(success) {
+      const word = deck[i];
+      if (success) { fixed++; removeTricky(word); cheer("⭐"); }  // mastered → leaves the list
+      i++;
+      if (i >= deck.length) {
+        renderDone("Tricky Words", "🤔", renderTricky, "You fixed " + fixed + " of " + deck.length + "!");
       } else show();
     }
     show();

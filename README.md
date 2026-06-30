@@ -140,7 +140,8 @@ minute or two. When you change app code, also bump `CACHE_VERSION` in `sw.js`
 - [x] Real-vs-nonsense word check (🕵️ Real or Not? activity)
 - [x] Single-file Artifact build (runs inside the Claude app)
 - [x] Star jar on the home page (collect a star for everything you read)
-- [x] Milestone statues + 🏛️ Collection gallery (Cat @10, Unicorn @25, Mermaid @50)
+- [x] Milestone statues + 🏛️ Collection gallery (Cat @3, Unicorn @10, Mermaid @20)
+- [x] Tricky-word review list (mark "Tricky" in Read Words → practice in Review Tricky Words)
 - [ ] Recorded human audio for phonemes
 - [ ] Parent progress view
 - [ ] Read-aloud / pronunciation check (paused — needs iPad test)

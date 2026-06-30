@@ -112,6 +112,22 @@ html, body {
 }
 .collection-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
 
+/* Review Tricky Words button (only shows when there are tricky words) */
+.tricky-btn {
+  width: 100%;
+  border: none;
+  font: inherit;
+  font-size: 1.3rem;
+  color: var(--ink);
+  background: linear-gradient(180deg, #ffd97a 0%, #ffc94b 100%);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  margin: -8px 0 24px;
+}
+.tricky-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+
 /* Collection gallery */
 .collection-grid {
   display: grid;
