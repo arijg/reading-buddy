@@ -43,12 +43,15 @@
     p.stars[levelId] = true;
     saveProgress(p);
   }
-  // Collectible star jar — grows every time she reads something.
-  // Returns a newly-unlocked statue (or null) so we can celebrate it.
-  function earnStars(n) {
+  // One collectible star the FIRST time a given lesson is finished.
+  // (key is unique per activity+level, e.g. "blend-3", "sounds", "heart")
+  function completeLesson(key) {
     const p = loadProgress();
+    p.lessonsDone = p.lessonsDone || {};
+    if (p.lessonsDone[key]) return;       // already earned — no duplicate star
+    p.lessonsDone[key] = true;
     const before = p.starCount || 0;
-    const after = before + n;
+    const after = before + 1;
     p.starCount = after;
     saveProgress(p);
     const unlocked = STATUES.find(s => before < s.stars && after >= s.stars);
@@ -164,9 +167,9 @@
   }
 
   const STATUES = [
-    { id: "cat",     name: "Reading Cat",     stars: 10, svg: statueSVG(CAT_CHAR) },
-    { id: "unicorn", name: "Reading Unicorn", stars: 25, svg: statueSVG(UNICORN_CHAR) },
-    { id: "mermaid", name: "Reading Mermaid", stars: 50, svg: statueSVG(MERMAID_CHAR) }
+    { id: "cat",     name: "Reading Cat",     stars: 3,  svg: statueSVG(CAT_CHAR) },
+    { id: "unicorn", name: "Reading Unicorn", stars: 10, svg: statueSVG(UNICORN_CHAR) },
+    { id: "mermaid", name: "Reading Mermaid", stars: 20, svg: statueSVG(MERMAID_CHAR) }
   ];
 
   // Big reveal overlay when a new statue is unlocked.
@@ -357,9 +360,8 @@
       app.appendChild(stage);
     }
     function next() {
-      earnStars(1);
       i++;
-      if (i >= deck.length) { cheer("🌟"); renderDone("Sounds", "🔤", renderSounds); }
+      if (i >= deck.length) { completeLesson("sounds"); cheer("🌟"); renderDone("Sounds", "🔤", renderSounds); }
       else show();
     }
     show();
@@ -392,10 +394,9 @@
       app.appendChild(stage);
     }
     function next() {
-      earnStars(1);
       cheer("🎉");
       i++;
-      if (i >= words.length) { markLevelStar(lvl.id); renderDone("Blend Words", "🧩", () => renderBlend(lvl)); }
+      if (i >= words.length) { completeLesson("blend-" + lvl.id); markLevelStar(lvl.id); renderDone("Blend Words", "🧩", () => renderBlend(lvl)); }
       else show();
     }
     show();
@@ -426,9 +427,10 @@
       app.appendChild(stage);
     }
     function next(success) {
-      if (success) { got++; earnStars(1); cheer("⭐"); }
+      if (success) { got++; cheer("⭐"); }
       i++;
       if (i >= words.length) {
+        completeLesson("read-" + lvl.id);
         if (got >= Math.ceil(words.length * 0.7)) markLevelStar(lvl.id);
         renderDone("Read Words", "📕", () => renderRead(lvl), "You got " + got + " of " + words.length + "!");
       } else show();
@@ -460,10 +462,9 @@
       app.appendChild(stage);
     }
     function next() {
-      earnStars(1);
       cheer("🎉");
       i++;
-      if (i >= sentences.length) { markLevelStar(lvl.id); renderDone("Sentences", "📖", () => renderSentences(lvl)); }
+      if (i >= sentences.length) { completeLesson("sentences-" + lvl.id); markLevelStar(lvl.id); renderDone("Sentences", "📖", () => renderSentences(lvl)); }
       else show();
     }
     show();
@@ -498,10 +499,11 @@
     }
     function answer(saidReal) {
       const card = deck[i];
-      if (saidReal === card.real) { got++; earnStars(1); cheer("⭐"); }
+      if (saidReal === card.real) { got++; cheer("⭐"); }
       else { cheer("🤔"); speak(card.real ? (card.word + " is a real word") : (card.word + " is not a real word")); }
       i++;
       if (i >= deck.length) {
+        completeLesson("real");
         renderDone("Real or Not?", "🕵️", renderRealOrNot, "You got " + got + " of " + deck.length + "!");
       } else show();
     }
@@ -532,9 +534,8 @@
       app.appendChild(stage);
     }
     function next() {
-      earnStars(1);
       i++;
-      if (i >= words.length) { cheer("💖"); renderDone("Heart Words", "❤️", renderHeartWords); }
+      if (i >= words.length) { completeLesson("heart"); cheer("💖"); renderDone("Heart Words", "❤️", renderHeartWords); }
       else show();
     }
     show();
