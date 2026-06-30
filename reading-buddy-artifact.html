@@ -998,14 +998,17 @@ window.READING_DATA = {
       ]));
 
       stage.appendChild(el("div", { class: "btn-row" }, [
-        el("button", { class: "btn green", onclick: next }, ["I read it! ✅"])
+        el("button", { class: "btn green", onclick: () => next(false) }, ["I read it! ✅"]),
+        el("button", { class: "btn yellow", onclick: () => next(true) }, ["Tricky 🤔"])
       ]));
 
       stage.appendChild(el("div", { class: "progress" }, [(i + 1) + " / " + words.length]));
       app.appendChild(stage);
     }
-    function next() {
-      cheer("🎉");
+    function next(tricky) {
+      const word = words[i];
+      if (tricky) { addTricky(word); cheer("🤔"); }
+      else { removeTricky(word); cheer("🎉"); }
       i++;
       if (i >= words.length) { completeLesson("blend-" + lvl.id); markLevelStar(lvl.id); renderDone("Blend Words", "🧩", () => renderBlend(lvl)); }
       else show();
@@ -1069,13 +1072,16 @@ window.READING_DATA = {
 
       stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(sentence) }, ["👂 Check it"]));
       stage.appendChild(el("div", { class: "btn-row" }, [
-        el("button", { class: "btn green", onclick: next }, ["I read it! ✅"])
+        el("button", { class: "btn green", onclick: () => next(false) }, ["I read it! ✅"]),
+        el("button", { class: "btn yellow", onclick: () => next(true) }, ["Tricky 🤔"])
       ]));
       stage.appendChild(el("div", { class: "progress" }, [(i + 1) + " / " + sentences.length]));
       app.appendChild(stage);
     }
-    function next() {
-      cheer("🎉");
+    function next(tricky) {
+      const sentence = sentences[i];
+      if (tricky) { addTricky(sentence); cheer("🤔"); }
+      else { removeTricky(sentence); cheer("🎉"); }
       i++;
       if (i >= sentences.length) { completeLesson("sentences-" + lvl.id); markLevelStar(lvl.id); renderDone("Sentences", "📖", () => renderSentences(lvl)); }
       else show();
@@ -1133,7 +1139,7 @@ window.READING_DATA = {
       stage.appendChild(el("div", { class: "done" }, [
         el("div", { class: "big" }, ["🎉"]),
         el("h2", null, ["No tricky words!"]),
-        el("p", { class: "prompt" }, ["When a word is hard in Read Words, tap \"Tricky\" and it will show up here to practice."])
+        el("p", { class: "prompt" }, ["When something is hard, tap \"Tricky\" in any activity and it will show up here to practice."])
       ]));
       stage.appendChild(el("button", { class: "btn ghost", onclick: renderHome }, ["🏠 Home"]));
       app.appendChild(stage);
@@ -1149,8 +1155,9 @@ window.READING_DATA = {
       const word = deck[i];
       const stage = el("div", { class: "stage" });
 
-      stage.appendChild(el("div", { class: "prompt" }, ["Practice this tricky word. Read it out loud!"]));
-      stage.appendChild(el("div", { class: "bigcard" }, [ wordLetters(word) ]));
+      const isSentence = word.indexOf(" ") >= 0;
+      stage.appendChild(el("div", { class: "prompt" }, ["Practice this tricky one. Read it out loud!"]));
+      stage.appendChild(el("div", { class: "bigcard" }, [ isSentence ? el("div", { class: "sentence" }, [word]) : wordLetters(word) ]));
       stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(word) }, ["👂 Check it"]));
       stage.appendChild(el("div", { class: "btn-row" }, [
         el("button", { class: "btn green", onclick: () => next(true) }, ["Got it now! 😄"]),
@@ -1188,12 +1195,16 @@ window.READING_DATA = {
 
       stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(word) }, ["👂 Check it"]));
       stage.appendChild(el("div", { class: "btn-row" }, [
-        el("button", { class: "btn pink", onclick: next }, ["Next ❤️"])
+        el("button", { class: "btn green", onclick: () => next(false) }, ["Got it! ❤️"]),
+        el("button", { class: "btn yellow", onclick: () => next(true) }, ["Tricky 🤔"])
       ]));
       stage.appendChild(el("div", { class: "progress" }, [(i + 1) + " / " + words.length]));
       app.appendChild(stage);
     }
-    function next() {
+    function next(tricky) {
+      const word = words[i];
+      if (tricky) { addTricky(word); cheer("🤔"); }
+      else { removeTricky(word); }
       i++;
       if (i >= words.length) { completeLesson("heart"); cheer("💖"); renderDone("Heart Words", "❤️", renderHeartWords); }
       else show();
