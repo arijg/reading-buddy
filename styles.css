@@ -67,6 +67,35 @@ html, body {
 }
 .home-sub { text-align: center; font-size: 1.1rem; opacity: .7; margin-bottom: 24px; }
 
+/* ---------- Star jar (home accomplishments) ---------- */
+.stars-banner {
+  background: linear-gradient(180deg, #fff6db 0%, #ffe9a8 100%);
+  border: 3px solid #ffd45e;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.stars-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.stars-count { font-size: 2.3rem; color: #b5791a; }
+.stars-label { font-size: 1.1rem; color: #8a6a2a; }
+.stars-row {
+  margin-top: 10px;
+  font-size: 1.5rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+.stars-more { font-size: 1.1rem; color: #8a6a2a; vertical-align: middle; }
+.stars-empty { margin-top: 8px; color: #8a6a2a; font-size: 1.05rem; }
+.stars-sub { margin-top: 10px; font-size: 1rem; color: #8a6a2a; opacity: .9; }
+
 .menu {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

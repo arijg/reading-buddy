@@ -43,6 +43,14 @@
     p.stars[levelId] = true;
     saveProgress(p);
   }
+  // Collectible star jar — grows every time she reads something.
+  function earnStars(n) {
+    const p = loadProgress();
+    p.starCount = (p.starCount || 0) + n;
+    saveProgress(p);
+  }
+  function getStarCount() { return loadProgress().starCount || 0; }
+  function getLevelsMastered() { return Object.keys(loadProgress().stars || {}).length; }
 
   /* ---------------- Small helpers ---------------- */
   function el(tag, props, kids) {
@@ -80,11 +88,41 @@
     ]);
   }
 
+  /* ---------------- Star jar (home accomplishments) ---------------- */
+  function starsBanner() {
+    const n = getStarCount();
+    const mastered = getLevelsMastered();
+    const total = DATA.levels.length;
+    const MAX_SHOWN = 60; // keep the row from overflowing on big collections
+
+    const head = el("div", { class: "stars-head" }, [
+      el("span", { class: "stars-count" }, ["⭐ " + n]),
+      el("span", { class: "stars-label" }, [n === 1 ? "star collected!" : "stars collected!"])
+    ]);
+    const banner = el("div", { class: "stars-banner" }, [head]);
+
+    if (n > 0) {
+      const row = el("div", { class: "stars-row" });
+      const shown = Math.min(n, MAX_SHOWN);
+      for (let k = 0; k < shown; k++) row.appendChild(document.createTextNode("⭐"));
+      if (n > MAX_SHOWN) row.appendChild(el("span", { class: "stars-more" }, [" +" + (n - MAX_SHOWN)]));
+      banner.appendChild(row);
+    } else {
+      banner.appendChild(el("div", { class: "stars-empty" }, ["Read and play to collect stars! 🌟"]));
+    }
+
+    banner.appendChild(el("div", { class: "stars-sub" }, [
+      "🏅 Levels mastered: " + mastered + " of " + total
+    ]));
+    return banner;
+  }
+
   /* ---------------- HOME ---------------- */
   function renderHome() {
     clear();
     app.appendChild(el("h1", { class: "home-title" }, ["Reading Buddy 📖"]));
     app.appendChild(el("p", { class: "home-sub" }, ["Pick something fun to do!"]));
+    app.appendChild(starsBanner());
 
     const items = [
       { emoji: "🔤", label: "Sounds",      go: renderSounds },
@@ -191,6 +229,7 @@
       app.appendChild(stage);
     }
     function next() {
+      earnStars(1);
       i++;
       if (i >= deck.length) { cheer("🌟"); renderDone("Sounds", "🔤", renderSounds); }
       else show();
@@ -225,6 +264,7 @@
       app.appendChild(stage);
     }
     function next() {
+      earnStars(1);
       cheer("🎉");
       i++;
       if (i >= words.length) { markLevelStar(lvl.id); renderDone("Blend Words", "🧩", () => renderBlend(lvl)); }
@@ -258,7 +298,7 @@
       app.appendChild(stage);
     }
     function next(success) {
-      if (success) { got++; cheer("⭐"); }
+      if (success) { got++; earnStars(1); cheer("⭐"); }
       i++;
       if (i >= words.length) {
         if (got >= Math.ceil(words.length * 0.7)) markLevelStar(lvl.id);
@@ -292,6 +332,7 @@
       app.appendChild(stage);
     }
     function next() {
+      earnStars(1);
       cheer("🎉");
       i++;
       if (i >= sentences.length) { markLevelStar(lvl.id); renderDone("Sentences", "📖", () => renderSentences(lvl)); }
@@ -329,7 +370,7 @@
     }
     function answer(saidReal) {
       const card = deck[i];
-      if (saidReal === card.real) { got++; cheer("⭐"); }
+      if (saidReal === card.real) { got++; earnStars(1); cheer("⭐"); }
       else { cheer("🤔"); speak(card.real ? (card.word + " is a real word") : (card.word + " is not a real word")); }
       i++;
       if (i >= deck.length) {
@@ -363,6 +404,7 @@
       app.appendChild(stage);
     }
     function next() {
+      earnStars(1);
       i++;
       if (i >= words.length) { cheer("💖"); renderDone("Heart Words", "❤️", renderHeartWords); }
       else show();
