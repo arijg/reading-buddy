@@ -96,6 +96,82 @@ html, body {
 .stars-empty { margin-top: 8px; color: #8a6a2a; font-size: 1.05rem; }
 .stars-sub { margin-top: 10px; font-size: 1rem; color: #8a6a2a; opacity: .9; }
 
+/* Collection button on home */
+.collection-btn {
+  width: 100%;
+  border: none;
+  font: inherit;
+  font-size: 1.3rem;
+  color: #fff;
+  background: linear-gradient(180deg, #a78bfa 0%, #8b6df0 100%);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+.collection-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+
+/* Collection gallery */
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.statue-card {
+  position: relative;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 10px;
+  text-align: center;
+}
+.statue-card.locked { background: #efeae0; }
+.statue-art svg { width: 100%; height: auto; display: block; }
+.statue-card.locked .statue-art { filter: grayscale(1) brightness(0.55) opacity(0.5); }
+.statue-name { font-size: 1.1rem; margin-top: 8px; }
+.statue-req  { font-size: 0.95rem; opacity: .7; margin-top: 2px; }
+.lock-badge {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -70%);
+  font-size: 2.6rem;
+}
+
+/* Statue unlock celebration */
+.celebrate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 49, 66, 0.55);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  padding: 20px;
+}
+.celebrate-card {
+  background: var(--card);
+  border-radius: 28px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  padding: 24px;
+  text-align: center;
+  max-width: 340px;
+  width: 100%;
+  animation: popin 0.4s ease-out;
+}
+@keyframes popin {
+  0%   { transform: scale(.5); opacity: 0; }
+  70%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.celebrate-title { font-size: 1.6rem; margin-bottom: 6px; }
+.celebrate-name  { font-size: 1.3rem; margin: 12px 0 18px; }
+.statue-art.big svg { width: 200px; max-width: 70%; height: auto; margin: 0 auto; display: block; }
+
+@media (max-width: 600px) {
+  .collection-grid { gap: 10px; }
+  .statue-name { font-size: 1rem; }
+}
+
 .menu {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
