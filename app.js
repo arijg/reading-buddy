@@ -918,8 +918,9 @@
       // Read the question aloud — she's still learning to read, so the words
       // shouldn't be the thing that blocks the math.
       const said = q.say || q.prompt;
-      stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(said) }, ["👂 Hear it"]));
-      if (opts.speakOnShow) speak(said);
+      const SAY_RATE = 0.7;   // a little slower than reading's 0.85 — easier for math words/numbers
+      stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(said, SAY_RATE) }, ["👂 Hear it"]));
+      if (opts.speakOnShow) speak(said, SAY_RATE);
 
       let answered = false, firstTry = true;
       const row = el("div", { class: "choice-row" });
@@ -1110,7 +1111,7 @@
       stage.appendChild(el("div", { class: "bigcard" }, [
         el("div", { class: "show-number" }, [String(target)])
       ]));
-      stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(String(target)) }, ["👂 Hear it"]));
+      stage.appendChild(el("button", { class: "hear-btn", onclick: () => speak(String(target), 0.7) }, ["👂 Hear it"]));
 
       // The ten-frame(s). Tapping a cell toggles a counter in/out.
       const cells = [];
